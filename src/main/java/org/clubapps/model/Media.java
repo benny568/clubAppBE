@@ -1,6 +1,14 @@
 package org.clubapps.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class Media {
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int mediaid;
 	private int type; // Image(0), Video(1), sound(2)
 	private String category1;
