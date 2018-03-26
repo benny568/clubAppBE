@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -32,15 +32,12 @@ import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.tomcat.util.http.fileupload.FileItemIterator;
 import org.apache.tomcat.util.http.fileupload.FileItemStream;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.apache.tomcat.util.http.fileupload.util.Streams;
 import org.clubapps.config.PaypalConfiguration;
-import org.clubapps.dao.MySqlDAO.Role;
 import org.clubapps.exceptions.IpnException;
 import org.clubapps.model.Booking;
 import org.clubapps.model.EmailMessage;
@@ -53,9 +50,13 @@ import org.clubapps.model.SessionPlan;
 import org.clubapps.model.SessionRecord;
 import org.clubapps.model.Team;
 import org.clubapps.model.Worker;
+import org.clubapps.user.ApplicationUser;
 import org.clubapps.utility.DBUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.userdetails.User;
 
 import com.paypal.core.LoggingManager;
 import com.paypal.ipn.IPNMessage;
@@ -64,6 +65,45 @@ public class MySqlDAO {
 	private final Logger log = LoggerFactory.getLogger(MySqlDAO.class);
 	@Autowired
 	 private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	
+	public User findByUsername( String username )
+	{
+		log.debug("## -> findByUsername(" + username + ")");
+		
+		String name = null;
+		String pass = null;
+		boolean enabled = true;
+		boolean accountNonExpired = true; 
+		boolean credentialsNonExpired = true;
+		boolean accountNonLocked = true;
+		
+		try {
+			   Connection connection = DBUtility.getConnection();
+		  	   PreparedStatement preparedStatement = connection.prepareStatement("select userid, name, password from user where name = ?");
+			   preparedStatement.setString(1, username);
+			   ResultSet rs = preparedStatement.executeQuery();
+			   log.trace("##    Executed query[select userid, name, password from user]");
+			   while (rs.next()) 
+			   {
+				    name = rs.getString("name");
+				    pass = rs.getString("password"); 
+			   }
+	  } catch (SQLException e) {
+	   e.printStackTrace();
+	  }
+
+	  DBUtility.closeConnection();
+	  log.debug("-------------------");
+	  log.debug("Username: " + name);
+	  log.debug("Password: " + pass);
+	  log.debug("Enabled:  " + enabled);
+	  log.debug("NotExp:  " + accountNonExpired);
+	  log.debug("CredNotExp:  " + credentialsNonExpired);
+	  log.debug("NotLocked: " + accountNonLocked);
+	  log.debug("-------------------");
+	  log.debug("## <- findByUsername()");
+	  return new User(name, pass, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked,new ArrayList<>());
+	}
 	
 	 public List<Member> getAllMembers() {
 
@@ -244,21 +284,24 @@ public class MySqlDAO {
 		  DBUtility.closeConnection();
 		  return;
 	 }
-	 public void deleteMemberDetails(int memberId)
+	 public int deleteMemberDetails(int memberId)
 	 {
 		 
 		  try {
 			   Connection connection = DBUtility.getConnection();
 			   PreparedStatement preparedStatement = connection.prepareStatement("delete from member where id=?");
 			   preparedStatement.setInt(1, memberId);
+			   log.trace("##    Executing sql statement: " + preparedStatement.toString());
 			   preparedStatement.executeUpdate();
 		
 			  } catch (SQLException e) {
 			   e.printStackTrace();
+			   return -1;
 			  }
 		  
+		  log.debug("##    Deleted member: " + memberId );
 		  DBUtility.closeConnection();
-		  return;
+		  return memberId;
 	 }
 
 	 public List<Team> getAllTeams() {

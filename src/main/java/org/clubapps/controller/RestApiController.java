@@ -17,8 +17,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.clubapps.dao.*;
-import org.clubapps.exceptions.*;
+import org.clubapps.dao.MySqlDAO;
+import org.clubapps.exceptions.IpnException;
 import org.clubapps.model.Booking;
 import org.clubapps.model.EmailMessage;
 import org.clubapps.model.Member;
@@ -27,6 +27,7 @@ import org.clubapps.model.SessionPlan;
 import org.clubapps.model.SessionRecord;
 import org.clubapps.model.Team;
 import org.clubapps.model.Worker;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -35,8 +36,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.slf4j.Logger;
 
 @CrossOrigin
 @RestController
@@ -147,9 +149,9 @@ public class RestApiController {
 	 }
 	 
 	 @RequestMapping(value="/admin/member/{memberId}",method = RequestMethod.DELETE)
-	 public void deleteMemberDetails(@RequestBody int memberId) {	 
-		 dao.deleteMemberDetails( memberId );	
-	 }	 
+	 public int deleteMemberDetails(@PathVariable int memberId) {	 
+		 return dao.deleteMemberDetails( memberId );
+	 }
 
 	 
 	 @RequestMapping(value="/admin/upload",method = RequestMethod.POST)
