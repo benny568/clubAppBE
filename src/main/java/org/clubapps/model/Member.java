@@ -1,24 +1,14 @@
 package org.clubapps.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import java.sql.Date;
 
-@Entity
 public class Member {
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name="id", nullable = false)
 	 private int id;
-	@Column(name="name", nullable = false)
 	 private String name;
 	 private String address;
 	 private String phone;
 	 private String phone2;
-	 @Column(name="email", nullable = false, unique = true) // email must be present and unique per member
 	 private String email;
 	 private String dob;
 	 private String amount;		// Amount paid to date

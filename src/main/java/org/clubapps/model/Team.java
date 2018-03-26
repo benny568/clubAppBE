@@ -1,12 +1,7 @@
 package org.clubapps.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-@Entity
 public class Team {
 
-	@Id
 	private int id;
 	private String name;
 	private int lrcode;
