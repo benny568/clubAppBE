@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RestApiController {
 	java.sql.Timestamp currentTimestamp = null;
 	private final Logger log = LoggerFactory.getLogger(RestApiController.class);
+	private final String version = "## SOFTWARE VERSION 0.3.0 ##";
 	
 	public RestApiController(){}
 	
@@ -77,6 +78,7 @@ public class RestApiController {
 	 
 	 @RequestMapping(value="/teams",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Team> getAllTeams() {
+		 log.debug(this.version);
 		 log.debug("## [RestApiController]->getTeams()..");
 		 List<Team> teams=dao.getAllTeams();
 		 return teams;
