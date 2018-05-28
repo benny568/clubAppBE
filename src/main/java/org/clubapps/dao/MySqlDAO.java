@@ -1376,8 +1376,8 @@ public class MySqlDAO {
 	 public List<String> getPhotoMedia(String cat1, String cat2, String cat3) {
 		 log.debug("## -> getPhotoMedia(" + cat1 + "," + cat2 + "," + cat3 + ")");
 		  List<String> photos = new ArrayList<String>();
-		  //String rootDir = "/home/odalybr/workspace/clubWebsite/clubRegisterApp/WebContent/WEB-INF/resources/galleries/";
-		  String rootDir = "/home/odalybr/jvm/apache-tomcat-8.0.9/domains/avenueunited.ie/ROOT/WEB-INF/resources/galleries/";
+		  //String rootDir = "/Library/Tomcat8/webapps/galleries/";
+		  String rootDir = "/home/odalybr/jvm/apache-tomcat-8.0.9/domains/avenueunited.ie/galleries/";
 		  
 		  try {
 			  

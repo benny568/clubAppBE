@@ -5,6 +5,7 @@ import static org.clubapps.security.SecurityConstants.GET_TEAMS_URL;
 import static org.clubapps.security.SecurityConstants.SIGN_UP_URL;
 import static org.clubapps.security.SecurityConstants.GET_TEAM_DETAILS_URL;
 import static org.clubapps.security.SecurityConstants.GET_TEAM_MEMBERS;
+import static org.clubapps.security.SecurityConstants.GET_PHOTOS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +43,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, GET_NEWS_URL).permitAll()
                 .antMatchers(HttpMethod.GET, GET_TEAM_DETAILS_URL).permitAll()
                 .antMatchers(HttpMethod.GET, GET_TEAM_MEMBERS ).permitAll()
+                .antMatchers(HttpMethod.GET, GET_PHOTOS ).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager()))
