@@ -50,13 +50,13 @@ import org.clubapps.model.SessionPlan;
 import org.clubapps.model.SessionRecord;
 import org.clubapps.model.Team;
 import org.clubapps.model.Worker;
-import org.clubapps.user.ApplicationUser;
 import org.clubapps.utility.DBUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.paypal.core.LoggingManager;
 import com.paypal.ipn.IPNMessage;
@@ -76,6 +76,7 @@ public class MySqlDAO {
 		boolean accountNonExpired = true; 
 		boolean credentialsNonExpired = true;
 		boolean accountNonLocked = true;
+		List<SimpleGrantedAuthority> auths = new ArrayList<SimpleGrantedAuthority>();
 		
 		try {
 			   Connection connection = DBUtility.getConnection();
@@ -88,6 +89,20 @@ public class MySqlDAO {
 				    name = rs.getString("name");
 				    pass = rs.getString("password"); 
 			   }
+			   
+			// (2) Get the user's roles from the user_roles table
+			   preparedStatement = connection.prepareStatement("select * from user_roles where name = ?");
+			   preparedStatement.setString(1, name);
+			   rs = preparedStatement.executeQuery();
+			   
+			// Now get the user's roles
+			/// New stuff
+			   while(rs.next())
+			   {
+				   SimpleGrantedAuthority sga = new SimpleGrantedAuthority(rs.getString("ROLE"));
+				   auths.add(sga);
+			   }
+			   
 	  } catch (SQLException e) {
 	   e.printStackTrace();
 	  }
@@ -102,7 +117,7 @@ public class MySqlDAO {
 	  log.debug("NotLocked: " + accountNonLocked);
 	  log.debug("-------------------");
 	  log.debug("## <- findByUsername()");
-	  return new User(name, pass, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked,new ArrayList<>());
+	  return new User(name, pass, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked,auths);
 	}
 	
 	 public List<Member> getAllMembers() {
@@ -892,10 +907,18 @@ public class MySqlDAO {
 			   preparedStatement.setString(1, name);
 			   rs = preparedStatement.executeQuery();
 			   
-			   while(rs.next()){
-				   roles.add(rs.getString("ROLE"));
+			   /// New stuff
+			   String role = null;
+			   while(rs.next())
+			   {
+				   role = rs.getString("ROLE");
 			   }
-			   thisUser.setRoles(roles);
+			   thisUser.setRole(role);
+			   
+//			   while(rs.next()){
+//				   roles.add(rs.getString("ROLE"));
+//			   }
+//			   thisUser.setRoles(roles);
 			   
 			   // (3) Get the user's permissions for the teams from the members table
 			   preparedStatement = connection.prepareStatement("select team, team2, team3, position, position2, position3 from member where email = ?");
@@ -941,7 +964,7 @@ public class MySqlDAO {
 			  	preparedStatement.setDate(5, sqlDate);
 			  	preparedStatement.setString(6, user.getAvatar());
 			  	preparedStatement.setInt(7, user.getEnabled());
-			  	preparedStatement.setInt(8, user.getUserId());
+			  	preparedStatement.setLong(8, user.getUserId());
 			  	preparedStatement.executeUpdate();
 			  	
 			  	// (2) Update the user_roles table
@@ -949,17 +972,29 @@ public class MySqlDAO {
 			  	// (2.1) We need to read the current roles to compare them
 			  	ArrayList<Role> roles = new ArrayList<Role>();
 			  	preparedStatement = connection.prepareStatement("select * from user_roles where userid=?");
-			  	preparedStatement.setInt(1, user.getUserId());
+			  	preparedStatement.setLong(1, user.getUserId());
 			  	ResultSet rs = preparedStatement.executeQuery();
-				   
-			  	while(rs.next()) {
-					Role role = new Role();
-					role.setRoleid(rs.getInt("user_role_id"));
+			  	
+			  	// New stuff
+			  	Role role = new Role();
+			  	while( rs.next() )
+			  	{
+			  		role.setRoleid(rs.getInt("user_role_id"));
 					role.setUserid(rs.getInt("userid"));
 					role.setName(rs.getString("name"));
-					role.setRole(rs.getString("role"));
-					roles.add(role);
-				}
+					role.setRole(new SimpleGrantedAuthority(rs.getString("role")));
+			  	}
+			  	
+			  	////////////
+				   
+//			  	while(rs.next()) {
+//					Role role = new Role();
+//					role.setRoleid(rs.getInt("user_role_id"));
+//					role.setUserid(rs.getInt("userid"));
+//					role.setName(rs.getString("name"));
+//					role.setRole(rs.getString("role"));
+//					roles.add(role);
+//				}
 			  	
 			  	// (3) Compare the existing roles with the passed in ones to see if there are updates
 			  	ArrayList<String> rolesToAdd = new ArrayList<String>();
@@ -968,7 +1003,7 @@ public class MySqlDAO {
 			  	{
 			  		for( int n=0; n<roles.size(); n++ )
 			  		{
-			  			if( user.getRoles().get(i).contentEquals(roles.get(n).getRole()) )
+			  			if( user.getRoles().get(i).getAuthority().contentEquals(roles.get(n).getRole().getAuthority()) )
 			  			{
 			  				found = true;
 			  				continue;
@@ -976,7 +1011,7 @@ public class MySqlDAO {
 			  		}
 			  		if( !found )
 			  		{
-			  			rolesToAdd.add(user.getRoles().get(i));
+			  			rolesToAdd.add(user.getRoles().get(i).getAuthority());
 			  			System.out.println("#### GOT ONE #######: " + user.getRoles().get(i));
 			  		}
 			  		found = false;
@@ -988,7 +1023,7 @@ public class MySqlDAO {
 			   // (2.3) For each role, add a row to the user_roles table
 			   for( int i=0; i<rolesToAdd.size(); i++ )
 			   {
-				   preparedStatement.setInt(1, user.getUserId());
+				   preparedStatement.setLong(1, user.getUserId());
 				   preparedStatement.setString(2, user.getName());
 				   preparedStatement.setString(3, rolesToAdd.get(i));
 				   preparedStatement.executeUpdate();
@@ -1008,7 +1043,7 @@ public class MySqlDAO {
 			    Connection connection = DBUtility.getConnection();
 			  	PreparedStatement preparedStatement = connection.prepareStatement("UPDATE user set password=? where userid = ?");
 			  	preparedStatement.setString(1, passwordEncoder.encode(user.getPassword()));
-			  	preparedStatement.setInt(2, user.getUserId());
+			  	preparedStatement.setLong(2, user.getUserId());
 			  	preparedStatement.executeUpdate();
 		
 			  } catch (SQLException e) {
@@ -1031,12 +1066,12 @@ public class MySqlDAO {
 			    
 			    // (3) Need to delete the user roles first from the user_roles table
 			  	preparedStatement = connection.prepareStatement("DELETE from user_roles where userid = ?");
-			  	preparedStatement.setInt(1, user.getUserId());
+			  	preparedStatement.setLong(1, user.getUserId());
 			  	preparedStatement.executeUpdate();
 			  	
 			  	// (4) Delete the user from the user table
 			  	preparedStatement = connection.prepareStatement("DELETE from user where userid = ?");
-			  	preparedStatement.setInt(1, user.getUserId());
+			  	preparedStatement.setLong(1, user.getUserId());
 			  	preparedStatement.executeUpdate();
 			  	
 			  	// (5) Commit the transaction
@@ -1196,7 +1231,7 @@ public class MySqlDAO {
 					    role.setRoleid(rs.getInt("user_role_id"));
 					    role.setUserid(rs.getInt("userid"));
 					    role.setName(rs.getString("name"));
-					    role.setRole(rs.getString("role"));
+					    role.setRole(new SimpleGrantedAuthority(rs.getString("role")));
 					    roles.add(role);
 					    log.trace("##    Adding role to list: " + role);
 				   }
@@ -1256,9 +1291,9 @@ public class MySqlDAO {
 			   // (2.3) For each role, add a row to the user_roles table
 			   for( int i=0; i<user.getRoles().size(); i++ )
 			   {
-				   preparedStatement.setInt(1, u.getUserId());
+				   preparedStatement.setLong(1, u.getUserId());
 				   preparedStatement.setString(2, user.getName());
-				   preparedStatement.setString(3, user.getRoles().get(i));
+				   preparedStatement.setString(3, user.getRoles().get(i).getAuthority());
 				   preparedStatement.executeUpdate();
 			   }
 			   
@@ -1310,7 +1345,7 @@ public class MySqlDAO {
 		 int roleid;
 		 int userid;
 		 String name;
-		 String role;
+		 SimpleGrantedAuthority role;
 		 
 		public int getRoleid() {
 			return roleid;
@@ -1330,10 +1365,10 @@ public class MySqlDAO {
 		public void setName(String name) {
 			this.name = name;
 		}
-		public String getRole() {
+		public SimpleGrantedAuthority getRole() {
 			return role;
 		}
-		public void setRole(String role) {
+		public void setRole(SimpleGrantedAuthority role) {
 			this.role = role;
 		}
 		 

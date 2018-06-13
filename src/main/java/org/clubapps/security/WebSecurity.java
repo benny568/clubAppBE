@@ -1,14 +1,13 @@
 package org.clubapps.security;
 
 import static org.clubapps.security.SecurityConstants.GET_NEWS_URL;
+import static org.clubapps.security.SecurityConstants.GET_PHOTOS;
 import static org.clubapps.security.SecurityConstants.GET_TEAMS_URL;
-import static org.clubapps.security.SecurityConstants.SIGN_UP_URL;
 import static org.clubapps.security.SecurityConstants.GET_TEAM_DETAILS_URL;
 import static org.clubapps.security.SecurityConstants.GET_TEAM_MEMBERS;
-import static org.clubapps.security.SecurityConstants.GET_PHOTOS;
+import static org.clubapps.security.SecurityConstants.SIGN_UP_URL;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -44,6 +43,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, GET_TEAM_DETAILS_URL).permitAll()
                 .antMatchers(HttpMethod.GET, GET_TEAM_MEMBERS ).permitAll()
                 .antMatchers(HttpMethod.GET, GET_PHOTOS ).permitAll()
+                .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager()))

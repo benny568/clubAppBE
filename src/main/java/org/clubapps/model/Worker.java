@@ -1,13 +1,15 @@
 package org.clubapps.model;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 // REM: User is someone with admin rights to the site as opposed to
 // a member who is just a club member, e.g. a player.
 
 public class Worker {
-	private int userId;
+	private long userId;
 	private String name;
 	private String password;
 	private String address;
@@ -16,20 +18,28 @@ public class Worker {
 	private String dob;
 	private String avatar;
 	private int enabled;
-	private ArrayList<String> roles;
+	private List<SimpleGrantedAuthority> roles;
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+	private String role;
 	private MyTeams permissions;
 	
 	public Worker()
 	{
-		roles = new ArrayList<String>();
+		roles = new ArrayList<SimpleGrantedAuthority>();
 		permissions = new MyTeams();
 	}
 	
-	public int getUserId() {
+	public long getUserId() {
 		return userId;
 	}
-	public void setUserId(int userId) {
-		this.userId = userId;
+	public void setUserId(long l) {
+		this.userId = l;
 	}
 	public String getAddress() {
 		return address;
@@ -80,11 +90,11 @@ public class Worker {
 		this.enabled = enabled;
 	}
 
-	public ArrayList<String> getRoles() {
+	public List<SimpleGrantedAuthority> getRoles() {
 		return roles;
 	}
-	public void setRoles(ArrayList<String> roles) {
-		this.roles = roles;
+	public void setRoles(List<SimpleGrantedAuthority> authorities) {
+		this.roles = authorities;
 	}
 	
 	public MyTeams getPermissions() {
