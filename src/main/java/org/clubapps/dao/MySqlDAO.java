@@ -57,15 +57,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import com.paypal.core.LoggingManager;
 import com.paypal.ipn.IPNMessage;
 
+@Component
 public class MySqlDAO {
 	private final Logger log = LoggerFactory.getLogger(MySqlDAO.class);
 	@Autowired
 	 private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 	
+	public void createUser( Worker user )
+	{
+		log.debug("## -> createUser(" + user.getName() + ")");
+		
+		try {
+			Connection connection = DBUtility.getConnection();
+			PreparedStatement preparedStatement = connection.prepareStatement("");
+			preparedStatement.setString(1, user.getName());
+			preparedStatement.setString(2, user.getAddress());
+		}
+		catch(SQLException e) {
+			   e.printStackTrace();
+		  }
+		
+		log.debug("## <- Return from createUser()");
+	}
 	public User findByUsername( String username )
 	{
 		log.debug("## -> findByUsername(" + username + ")");
@@ -90,13 +108,13 @@ public class MySqlDAO {
 				    pass = rs.getString("password"); 
 			   }
 			   
-			// (2) Get the user's roles from the user_roles table
+			   // (2) Get the user's roles from the user_roles table
 			   preparedStatement = connection.prepareStatement("select * from user_roles where name = ?");
 			   preparedStatement.setString(1, name);
 			   rs = preparedStatement.executeQuery();
 			   
-			// Now get the user's roles
-			/// New stuff
+			   // Now get the user's roles
+			   /// New stuff
 			   while(rs.next())
 			   {
 				   SimpleGrantedAuthority sga = new SimpleGrantedAuthority(rs.getString("ROLE"));
@@ -115,6 +133,7 @@ public class MySqlDAO {
 	  log.debug("NotExp:  " + accountNonExpired);
 	  log.debug("CredNotExp:  " + credentialsNonExpired);
 	  log.debug("NotLocked: " + accountNonLocked);
+	  log.debug("Roles: " + auths.get(0).getAuthority());
 	  log.debug("-------------------");
 	  log.debug("## <- findByUsername()");
 	  return new User(name, pass, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked,auths);
@@ -899,7 +918,7 @@ public class MySqlDAO {
 				   thisUser.setPhone(rs.getString("phone"));
 				   thisUser.setDob(df.format(rs.getDate("dob")));
 				   thisUser.setAvatar(rs.getString("avatar"));
-				   thisUser.setEnabled(rs.getInt("enabled"));
+				   thisUser.setEnabled(rs.getBoolean("enabled"));
 			   }
 			   
 			   // (2) Get the user's roles from the user_roles table
@@ -933,7 +952,7 @@ public class MySqlDAO {
 				  myteams.addPosition(rs.getInt("position2"));
 				  myteams.addPosition(rs.getInt("position3"));
 			   }
-			   thisUser.setPermissions(myteams);
+			   //thisUser.setPermissions(myteams);
 			   
 		  } catch (SQLException e) {
 		   e.printStackTrace();
@@ -944,96 +963,96 @@ public class MySqlDAO {
 	}
 	public void updateUser(Worker user)
 	 {
-        java.sql.Date sqlDate = null;
-        SimpleDateFormat dateFormater = new SimpleDateFormat("dd/MM/yyyy");
-        try {
-			sqlDate = new java.sql.Date(dateFormater.parse(user.getDob()).getTime());
-		 } catch (ParseException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-		 }
-		 
-		  try {
-			    Connection connection = DBUtility.getConnection();
-			  	PreparedStatement preparedStatement = connection.prepareStatement("UPDATE user set name=?,address=?,phone=?,email=?,dob=?,avatar=?,enabled=? where userid = ?");
-			  	preparedStatement.setString(1, user.getName());
-			  	//preparedStatement.setString(2, user.getPassword());
-			  	preparedStatement.setString(2, user.getAddress());
-			  	preparedStatement.setString(3, user.getPhone());
-			  	preparedStatement.setString(4, user.getEmail());
-			  	preparedStatement.setDate(5, sqlDate);
-			  	preparedStatement.setString(6, user.getAvatar());
-			  	preparedStatement.setInt(7, user.getEnabled());
-			  	preparedStatement.setLong(8, user.getUserId());
-			  	preparedStatement.executeUpdate();
-			  	
-			  	// (2) Update the user_roles table
-				   
-			  	// (2.1) We need to read the current roles to compare them
-			  	ArrayList<Role> roles = new ArrayList<Role>();
-			  	preparedStatement = connection.prepareStatement("select * from user_roles where userid=?");
-			  	preparedStatement.setLong(1, user.getUserId());
-			  	ResultSet rs = preparedStatement.executeQuery();
-			  	
-			  	// New stuff
-			  	Role role = new Role();
-			  	while( rs.next() )
-			  	{
-			  		role.setRoleid(rs.getInt("user_role_id"));
-					role.setUserid(rs.getInt("userid"));
-					role.setName(rs.getString("name"));
-					role.setRole(new SimpleGrantedAuthority(rs.getString("role")));
-			  	}
-			  	
-			  	////////////
-				   
-//			  	while(rs.next()) {
-//					Role role = new Role();
-//					role.setRoleid(rs.getInt("user_role_id"));
+//        java.sql.Date sqlDate = null;
+//        SimpleDateFormat dateFormater = new SimpleDateFormat("dd/MM/yyyy");
+//        try {
+//			sqlDate = new java.sql.Date(dateFormater.parse(user.getDob()).getTime());
+//		 } catch (ParseException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//		 }
+//		 
+//		  try {
+//			    Connection connection = DBUtility.getConnection();
+//			  	PreparedStatement preparedStatement = connection.prepareStatement("UPDATE user set name=?,address=?,phone=?,email=?,dob=?,avatar=?,enabled=? where userid = ?");
+//			  	preparedStatement.setString(1, user.getName());
+//			  	//preparedStatement.setString(2, user.getPassword());
+//			  	preparedStatement.setString(2, user.getAddress());
+//			  	preparedStatement.setString(3, user.getPhone());
+//			  	preparedStatement.setString(4, user.getEmail());
+//			  	preparedStatement.setDate(5, sqlDate);
+//			  	preparedStatement.setString(6, user.getAvatar());
+//			  	preparedStatement.setBoolean(7, user.getEnabled());
+//			  	preparedStatement.setLong(8, user.getUserId());
+//			  	preparedStatement.executeUpdate();
+//			  	
+//			  	// (2) Update the user_roles table
+//				   
+//			  	// (2.1) We need to read the current roles to compare them
+//			  	ArrayList<Role> roles = new ArrayList<Role>();
+//			  	preparedStatement = connection.prepareStatement("select * from user_roles where userid=?");
+//			  	preparedStatement.setLong(1, user.getUserId());
+//			  	ResultSet rs = preparedStatement.executeQuery();
+//			  	
+//			  	// New stuff
+//			  	Role role = new Role();
+//			  	while( rs.next() )
+//			  	{
+//			  		role.setRoleid(rs.getInt("user_role_id"));
 //					role.setUserid(rs.getInt("userid"));
 //					role.setName(rs.getString("name"));
-//					role.setRole(rs.getString("role"));
-//					roles.add(role);
-//				}
-			  	
-			  	// (3) Compare the existing roles with the passed in ones to see if there are updates
-			  	ArrayList<String> rolesToAdd = new ArrayList<String>();
-			  	boolean found = false;
-			  	for( int i=0; i<user.getRoles().size(); i++ )
-			  	{
-			  		for( int n=0; n<roles.size(); n++ )
-			  		{
-			  			if( user.getRoles().get(i).getAuthority().contentEquals(roles.get(n).getRole().getAuthority()) )
-			  			{
-			  				found = true;
-			  				continue;
-			  			}
-			  		}
-			  		if( !found )
-			  		{
-			  			rolesToAdd.add(user.getRoles().get(i).getAuthority());
-			  			System.out.println("#### GOT ONE #######: " + user.getRoles().get(i));
-			  		}
-			  		found = false;
-			  	}
-			   
-			   // (2.2) Prep the SQL statement
-			  preparedStatement = connection.prepareStatement("INSERT INTO user_roles ( userid, name, role ) VALUES (?, ?, ? )");
-			   
-			   // (2.3) For each role, add a row to the user_roles table
-			   for( int i=0; i<rolesToAdd.size(); i++ )
-			   {
-				   preparedStatement.setLong(1, user.getUserId());
-				   preparedStatement.setString(2, user.getName());
-				   preparedStatement.setString(3, rolesToAdd.get(i));
-				   preparedStatement.executeUpdate();
-			   }
-		
-			  } catch (SQLException e) {
-				  e.printStackTrace();
-			  }
-		  
-		  DBUtility.closeConnection();
+//					role.setRole(new SimpleGrantedAuthority(rs.getString("role")));
+//			  	}
+//			  	
+//			  	////////////
+//				   
+////			  	while(rs.next()) {
+////					Role role = new Role();
+////					role.setRoleid(rs.getInt("user_role_id"));
+////					role.setUserid(rs.getInt("userid"));
+////					role.setName(rs.getString("name"));
+////					role.setRole(rs.getString("role"));
+////					roles.add(role);
+////				}
+//			  	
+//			  	// (3) Compare the existing roles with the passed in ones to see if there are updates
+//			  	ArrayList<String> rolesToAdd = new ArrayList<String>();
+//			  	boolean found = false;
+//			  	for( int i=0; i<user.getRoles().size(); i++ )
+//			  	{
+//			  		for( int n=0; n<roles.size(); n++ )
+//			  		{
+//			  			if( user.getRoles().get(i).getAuthority().contentEquals(roles.get(n).getRole().getAuthority()) )
+//			  			{
+//			  				found = true;
+//			  				continue;
+//			  			}
+//			  		}
+//			  		if( !found )
+//			  		{
+//			  			rolesToAdd.add(user.getRoles().get(i).getAuthority());
+//			  			System.out.println("#### GOT ONE #######: " + user.getRoles().get(i));
+//			  		}
+//			  		found = false;
+//			  	}
+//			   
+//			   // (2.2) Prep the SQL statement
+//			  preparedStatement = connection.prepareStatement("INSERT INTO user_roles ( userid, name, role ) VALUES (?, ?, ? )");
+//			   
+//			   // (2.3) For each role, add a row to the user_roles table
+//			   for( int i=0; i<rolesToAdd.size(); i++ )
+//			   {
+//				   preparedStatement.setLong(1, user.getUserId());
+//				   preparedStatement.setString(2, user.getName());
+//				   preparedStatement.setString(3, rolesToAdd.get(i));
+//				   preparedStatement.executeUpdate();
+//			   }
+//		
+//			  } catch (SQLException e) {
+//				  e.printStackTrace();
+//			  }
+//		  
+//		  DBUtility.closeConnection();
 		  return;
 	 }
 	public void updateUserPassword(Worker user)
@@ -1205,7 +1224,7 @@ public class MySqlDAO {
 				   Statement statement = connection.createStatement();
 				   //ResultSet rs = statement.executeQuery("select * from user");
 				   ResultSet rs = statement.executeQuery("select * from user");
-				   log.trace("##    Executed query[select * from user]");
+				   log.debug("##    Executed query[select * from user]");
 				   while (rs.next()) 
 				   {
 					    Worker user = new Worker();
@@ -1219,11 +1238,11 @@ public class MySqlDAO {
 					    user.setDob(convertSqlDateToString(rs.getDate("dob")));
 					    user.setAvatar(rs.getString("avatar"));
 					    users.add(user);
-					    log.trace("##    Adding user to list: " + user);
+					    log.debug("##    Adding user to list: " + user.getName());
 				   }
 				   
 				   rs = statement.executeQuery("select * from user_roles");
-				   log.trace("##    Executed query[select * from user_roles]");
+				   log.debug("##    Executed query[select * from user_roles]");
 				   List<Role> roles = new ArrayList<Role>();
 				   while (rs.next()) 
 				   {
@@ -1233,20 +1252,20 @@ public class MySqlDAO {
 					    role.setName(rs.getString("name"));
 					    role.setRole(new SimpleGrantedAuthority(rs.getString("role")));
 					    roles.add(role);
-					    log.trace("##    Adding role to list: " + role);
+					    log.debug("##    Adding role to list: " + role.getName());
 				   }
 				   // Add the roles to the user
-				   for( int i=0; i<users.size(); i++ )
-				   {
-					   for( int a=0; a<roles.size(); a++ )
-					   {
-						   if( users.get(i).getUserId() == roles.get(a).userid )
-						   {
-							   users.get(i).getRoles().add(roles.get(a).role);
-							   log.trace("##    Added role to user: " + users.get(i).getName() + ": " + roles.get(a).role);
-						   }
-					   }
-				   }
+//				   for( int i=0; i<users.size(); i++ )
+//				   {
+//					   for( int a=0; a<roles.size(); a++ )
+//					   {
+//						   if( users.get(i).getUserId() == roles.get(a).userid )
+//						   {
+//							   users.get(i).getRoles().add(roles.get(a).role);
+//							   log.debug("##    Added role to user: " + users.get(i).getName() + ": " + roles.get(a).role);
+//						   }
+//					   }
+//				   }
 				   
 		  } catch (SQLException e) {
 		   e.printStackTrace();
@@ -1289,13 +1308,13 @@ public class MySqlDAO {
 			   preparedStatement = connection.prepareStatement("INSERT INTO user_roles ( userid, name, role ) VALUES (?, ?, ? )");
 			   
 			   // (2.3) For each role, add a row to the user_roles table
-			   for( int i=0; i<user.getRoles().size(); i++ )
-			   {
+//			   for( int i=0; i<user.getRoles().size(); i++ )
+//			   {
 				   preparedStatement.setLong(1, u.getUserId());
 				   preparedStatement.setString(2, user.getName());
-				   preparedStatement.setString(3, user.getRoles().get(i).getAuthority());
+				   preparedStatement.setString(3, user.getRole());
 				   preparedStatement.executeUpdate();
-			   }
+//			   }
 			   
 		
 			  } catch (SQLException e) {
@@ -1309,7 +1328,7 @@ public class MySqlDAO {
 	 public java.sql.Date convertStringToSqlDate( String sDate )
 	 {
 		 java.sql.Date sqlDate = null;
-		 DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+		 DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		 
 		 Date parsed = null;
 		try {
@@ -1560,7 +1579,7 @@ public class MySqlDAO {
 		 EmailMessage msg = new EmailMessage();
 		 String destination = ipi.getPayerEmail();
 		 msg.setSubject("Avenue United: Payment Confirmation - Automated message, do not reply");
-		 msg.setMessage("Avenue United Academy 2016/17\n\n" +
+		 msg.setMessage("Avenue United Academy 2017/18\n\n" +
 				 		"Confirmation of your payment: \n" +
 				 		"Name: " + ipi.getFirstName() + " " + ipi.getLastName() + "\n" +
 				 		"Address: "+ ipi.getAddressCity() + "," + ipi.getAddressStreet() + "\n" +
@@ -1642,6 +1661,7 @@ public class MySqlDAO {
 
 	         // Send message
 	         Transport.send(message);
+	         log.debug("Sent message successfully: " + message);
 	         System.out.println("Sent message successfully....");
 	         return true;
 	      }catch (MessagingException mex) {
@@ -1651,11 +1671,12 @@ public class MySqlDAO {
 	 }
 	 
 	 public boolean sendRegistrationDetailsEmail(Member member) 
-	 {	 
+	 {	
+		 log.debug("-----> sendRegistrationDetailsEmail()");
 		 EmailMessage msg = new EmailMessage();
 		 String destination = member.getEmail();
-		 msg.setSubject("Avenue United: Registration Details - Automated message, do not reply");
-		 msg.setMessage("Avenue United Academy 2016/17\n\n" +
+		 msg.setSubject("Avenue United: Registration Details for " + member.getName() + " - Automated message, do not reply");
+		 msg.setMessage("Avenue United Academy 2018/19\n\n" +
 				 		"You added the folllowing details via our website, please check: \n" +
 				 		"Name: " + member.getName() + "\n" +
 				 		//"Address: " + member.getAddress() + "\n" +
@@ -1677,9 +1698,43 @@ public class MySqlDAO {
 
 				 		"Payment due: " + member.getAmount() +  "\n\n" +
 				 		
-				 		"Thank you for using our online registration, please note that a registration is not valid until " +
-				 		"the fees due are paid. If you pay via PayPal you should receive another email confirming your payment." +
-				 		"\n\nYours in sport,\nAvenue United."
+						"Thank you for using our online registration, please note that a registration is not valid until " +
+						"the fees due are paid. If you pay via PayPal you should receive another email confirming your payment." +
+						"\n\nYours in sport,\nAvenue United.\n\n" +
+				 		
+						"Parents Code:\n" +
+						"As a parent, you play a special role in the development of your daughter or son, and of his/her teammates." +
+						" Your encouragement and good example will do more to ensure good sportsmanship and self-discipline than any" +
+						" other influence. While winning is important, playing well and fairly is the essence of the game.\n\n" + 
+						
+						"Support your Child:\n" +
+						"Support your child by giving encouragement and showing interest in his/her team. Help your child work toward"+
+						" skill improvement and good sportsmanship in every game. Teach your child that hard work and an honest " +
+						"effort are often more important than winning.\n\n" +
+						
+						"Always be positive:\n" +
+						"Children learn more by example than by criticism. Work to be a positive role model, and reinforce positive " +
+						"behavior in others. Applaud good plays by others on your child's team as well as good plays by the opposing "+
+						"team. Do not criticize any child’s performance from the sidelines. Accept the results of each game. Teach " +
+						"your child to be gracious in victory and to turn defeat into victory by learning and working toward " +
+						"improvement.\n\n" +
+						
+						"Don’t be a sideline coach or referee:\n" +
+						"Refrain from coaching or refereeing from the sidelines. Parents who shout or scream from the sidelines often"+
+						" give inappropriate advice at the wrong time. The coach should be the only sideline voice. Remain well back "+
+						"from the sidelines and within the spectator area. You and your child will both enjoy the coaching sessions " +
+						"more if you put some emotional distance between yourself and the field or play.\n\n" +
+						
+						"Demonstrate a positive attitude:\n" +
+						"Toward your opponents and their families Opponents are not enemies. Take care to show good hospitality at " +
+						"home and to represent Avenue United F.C in a positive way when visiting other clubs. Never allow yourself " +
+						"to be drawn into a verbal disagreement with opposing parents or coaches. No one has ever regretted letting " +
+						"cooler heads prevail.\n\n" +
+						
+						"Remember that your child wants to have fun:\n" +
+						"Your child is the one playing soccer, not you. Children must establish their own goals - to play the game " +
+						"for themselves. Take care not to impose unreasonable demands on your child. Let your children experience " +
+						"the fun of playing as well as the challenge of excelling."
 
 						
 				 		); 
@@ -1711,6 +1766,7 @@ public class MySqlDAO {
 
 	         // Set To: header field of the header.
 	         message.addRecipient(Message.RecipientType.TO, new InternetAddress(destination));
+	         message.addRecipient(Message.RecipientType.CC, new InternetAddress("academy@avenueunited.ie"));
 
 	         // Set Subject: header field
 	         message.setSubject(msg.getSubject());
@@ -1720,17 +1776,20 @@ public class MySqlDAO {
 
 	         // Send message
 	         Transport.send(message);
-	         System.out.println("Sent message successfully....");
-	         sendRegistrationDetailsEmailCopy(msg.getMessage(), member);
+	         log.debug("Sent message successfully to (" + msg.getSenderAddress() + "): [" + msg.getMessage() + "]");
+	         // Send a copy to Academy Director
+	         //sendRegistrationDetailsEmailCopy(msg.getMessage(), member);
 	         return true;
 	      }catch (MessagingException mex) {
+	    	 log.debug("sendRegistrationDetailsEmail(" + msg.getSenderAddress() + ") FAILED !!");
 	         mex.printStackTrace();
 	         return false;
 	      }
 	 }
 	 
 	 public boolean sendRegistrationDetailsEmailCopy(String msgBody, Member member) 
-	 {	 
+	 {	
+		 log.debug("-----> sendRegistrationDetailsEmailCopy()");
 		 EmailMessage msg = new EmailMessage();
 		 String destination = "academy@avenueunited.ie";
 		 msg.setSubject("Avenue United: Registration Details - " + member.getName());
@@ -1772,9 +1831,12 @@ public class MySqlDAO {
 
 	         // Send message
 	         Transport.send(message);
+	         log.debug("Sent message successfully: " + message);
 	         System.out.println("Sent message successfully....");
+	         log.debug("<===== sendRegistrationDetailsEmailCopy()");
 	         return true;
 	      }catch (MessagingException mex) {
+	    	  log.debug("sendRegistrationDetailsEmailCopy() FAILED !!");
 	         mex.printStackTrace();
 	         return false;
 	      }

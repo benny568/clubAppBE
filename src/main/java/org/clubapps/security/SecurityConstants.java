@@ -11,4 +11,7 @@ public class SecurityConstants {
     public static final String GET_TEAM_DETAILS_URL = "/team/{team}";
     public static final String GET_TEAM_MEMBERS = "/teammembers/{teamName}";
     public static final String GET_PHOTOS = "/photos/**";
+    public static final String ACADEMY_REG = "/academyregistration";
+    public static final String PAYPAL_IPN = "/ipn";
+    public static final String REG_CONFIR_EMAIL = "/confirmregistration";
 }

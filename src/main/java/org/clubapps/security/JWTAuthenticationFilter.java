@@ -58,7 +58,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     	List<SimpleGrantedAuthority> authorities = (List<SimpleGrantedAuthority>) auth.getAuthorities();
     	user.setName(auth.getName());
     	user.setRole(authorities.get(0).getAuthority());
-    	user.setRoles(authorities);
+    	//user.setRoles(authorities);
     	
     	String token = jwtUtil.generateToken(user);
         res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);

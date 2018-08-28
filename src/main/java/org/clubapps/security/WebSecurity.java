@@ -6,6 +6,9 @@ import static org.clubapps.security.SecurityConstants.GET_TEAMS_URL;
 import static org.clubapps.security.SecurityConstants.GET_TEAM_DETAILS_URL;
 import static org.clubapps.security.SecurityConstants.GET_TEAM_MEMBERS;
 import static org.clubapps.security.SecurityConstants.SIGN_UP_URL;
+import static org.clubapps.security.SecurityConstants.ACADEMY_REG;
+import static org.clubapps.security.SecurityConstants.PAYPAL_IPN;
+import static org.clubapps.security.SecurityConstants.REG_CONFIR_EMAIL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +46,9 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, GET_TEAM_DETAILS_URL).permitAll()
                 .antMatchers(HttpMethod.GET, GET_TEAM_MEMBERS ).permitAll()
                 .antMatchers(HttpMethod.GET, GET_PHOTOS ).permitAll()
+                .antMatchers(HttpMethod.POST,ACADEMY_REG).permitAll()
+                .antMatchers(HttpMethod.POST,PAYPAL_IPN).permitAll()
+                .antMatchers(HttpMethod.POST,REG_CONFIR_EMAIL).permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()

@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 	
-	MySqlDAO userRepository=new MySqlDAO();
+	@Autowired
+	MySqlDAO userRepository;
  
     @Override
     public UserDetails loadUserByUsername(String username) {

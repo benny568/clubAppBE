@@ -17,22 +17,15 @@ public class Worker {
 	private String phone;
 	private String dob;
 	private String avatar;
-	private int enabled;
-	private List<SimpleGrantedAuthority> roles;
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
-	}
+	private boolean enabled;
+	//private List<SimpleGrantedAuthority> roles;
 	private String role;
-	private MyTeams permissions;
+	//private MyTeams permissions;
 	
 	public Worker()
 	{
-		roles = new ArrayList<SimpleGrantedAuthority>();
-		permissions = new MyTeams();
+		//roles = new ArrayList<SimpleGrantedAuthority>();
+		//permissions = new MyTeams();
 	}
 	
 	public long getUserId() {
@@ -83,25 +76,31 @@ public class Worker {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public int getEnabled() {
+	public boolean getEnabled() {
 		return enabled;
 	}
-	public void setEnabled(int enabled) {
+	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 
-	public List<SimpleGrantedAuthority> getRoles() {
-		return roles;
-	}
-	public void setRoles(List<SimpleGrantedAuthority> authorities) {
-		this.roles = authorities;
-	}
+//	public List<SimpleGrantedAuthority> getRoles() {
+//		return roles;
+//	}
+//	public void setRoles(List<SimpleGrantedAuthority> authorities) {
+//		this.roles = authorities;
+//	}
 	
-	public MyTeams getPermissions() {
-		return permissions;
+//	public MyTeams getPermissions() {
+//		return permissions;
+//	}
+//	public void setPermissions(MyTeams permissions) {
+//		this.permissions = permissions;
+//	}
+	public String getRole() {
+		return role;
 	}
-	public void setPermissions(MyTeams permissions) {
-		this.permissions = permissions;
+
+	public void setRole(String role) {
+		this.role = role;
 	}
-	
 }

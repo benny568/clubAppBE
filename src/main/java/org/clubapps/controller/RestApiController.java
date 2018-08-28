@@ -5,6 +5,7 @@ import java.security.Principal;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
+import java.lang.Runtime;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -29,6 +30,7 @@ import org.clubapps.model.Team;
 import org.clubapps.model.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -36,8 +38,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin
@@ -47,9 +47,12 @@ public class RestApiController {
 	private final Logger log = LoggerFactory.getLogger(RestApiController.class);
 	private final String version = "## SOFTWARE VERSION 0.3.0 ##";
 	
+	String availableMemory = "**** Max Heap MEMORY: " + Long.toString(Runtime.getRuntime().maxMemory()) + " ****";
+	
 	public RestApiController(){}
 	
-	MySqlDAO dao=new MySqlDAO();
+	@Autowired
+	MySqlDAO dao;//=new MySqlDAO();
 	
 	/*
 	 * Used during authentication. If Spring Security has authenticated the user, then
@@ -76,9 +79,18 @@ public class RestApiController {
 	
 	 }
 	 
+	 @RequestMapping(value="/admin/user",method = RequestMethod.POST,headers="Accept=application/json")
+	 public void createUser( @RequestBody Worker user ) {
+		 log.debug("## [RestApiController]->createUser(" + user.getName() + ")..");
+		 dao.addUser(user);
+		 return;
+	
+	 }
+	 
 	 @RequestMapping(value="/teams",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Team> getAllTeams() {
 		 log.debug(this.version);
+		 log.debug(availableMemory);
 		 log.debug("## [RestApiController]->getTeams()..");
 		 List<Team> teams=dao.getAllTeams();
 		 return teams;
@@ -185,7 +197,7 @@ public class RestApiController {
 	 }
 	 
 	 @RequestMapping(value="/admin/team",method = RequestMethod.POST)
-	 public void addTeam(@RequestBody Team team) {	 
+	 public void addTeam(@RequestBody Team team ) {	 
 		 dao.addTeam( team );
 	 }
 	 
@@ -439,7 +451,7 @@ public class RestApiController {
 	 @RequestMapping(value="/academyregistration",method = RequestMethod.POST)
 	 public void addAcademyRegistration(@RequestBody Member member) {	
 		 log.debug("## ->addAcademyRegistration("+member+")");
-		 dao.addMember( member );
+		 dao.addMember( member);
 		 logMemberDetails(member);
 		 log.debug("## <-addAcademyRegistration()");
 	 }
@@ -458,6 +470,7 @@ public class RestApiController {
 	 
 	 public void logMemberDetails( Member member )
 	 {
+		 log.debug("=> logMemberDetails()");
 		 log.debug("*************************************************");
 		 log.debug("***           MEMBER DETAILS                  ***");
 		 log.debug("*************************************************");
@@ -483,9 +496,8 @@ public class RestApiController {
 		 log.debug("**    Goals: " + member.getSgoals());
 		 log.debug("**    Photo Loc: " + member.getPhoto());
 		 log.debug("**    Achievements: " + member.getAchievements());
-		 log.debug("**    Status: " + member.getStatus());
-		 
-		 
+		 log.debug("**    Status: " + member.getStatus());	 
 		 log.debug("*************************************************");
+		 log.debug("<= logMemberDetails()");
 	 }
 }
