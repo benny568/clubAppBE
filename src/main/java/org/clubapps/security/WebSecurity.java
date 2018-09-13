@@ -1,14 +1,12 @@
 package org.clubapps.security;
 
-import static org.clubapps.security.SecurityConstants.GET_NEWS_URL;
 import static org.clubapps.security.SecurityConstants.GET_PHOTOS;
-import static org.clubapps.security.SecurityConstants.GET_TEAMS_URL;
 import static org.clubapps.security.SecurityConstants.GET_TEAM_DETAILS_URL;
 import static org.clubapps.security.SecurityConstants.GET_TEAM_MEMBERS;
-import static org.clubapps.security.SecurityConstants.SIGN_UP_URL;
-import static org.clubapps.security.SecurityConstants.ACADEMY_REG;
 import static org.clubapps.security.SecurityConstants.PAYPAL_IPN;
-import static org.clubapps.security.SecurityConstants.REG_CONFIR_EMAIL;
+import static org.clubapps.security.SecurityConstants.PUBLIC_ACCESS;
+import static org.clubapps.security.SecurityConstants.CONFIRM_ACADEMY_REG_POST;
+import static org.clubapps.security.SecurityConstants.ACADEMY_REG_POST;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,15 +38,13 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().authorizeRequests()
-                .antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
-                .antMatchers(HttpMethod.GET, GET_TEAMS_URL).permitAll()
-                .antMatchers(HttpMethod.GET, GET_NEWS_URL).permitAll()
                 .antMatchers(HttpMethod.GET, GET_TEAM_DETAILS_URL).permitAll()
                 .antMatchers(HttpMethod.GET, GET_TEAM_MEMBERS ).permitAll()
                 .antMatchers(HttpMethod.GET, GET_PHOTOS ).permitAll()
-                .antMatchers(HttpMethod.POST,ACADEMY_REG).permitAll()
+                .antMatchers(HttpMethod.GET, PUBLIC_ACCESS ).permitAll()
                 .antMatchers(HttpMethod.POST,PAYPAL_IPN).permitAll()
-                .antMatchers(HttpMethod.POST,REG_CONFIR_EMAIL).permitAll()
+                .antMatchers(HttpMethod.POST,CONFIRM_ACADEMY_REG_POST).permitAll()
+                .antMatchers(HttpMethod.POST,ACADEMY_REG_POST).permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()

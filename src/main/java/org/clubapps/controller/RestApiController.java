@@ -3,9 +3,9 @@ package org.clubapps.controller;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.lang.Runtime;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -21,16 +21,20 @@ import javax.servlet.http.HttpServletResponse;
 import org.clubapps.dao.MySqlDAO;
 import org.clubapps.exceptions.IpnException;
 import org.clubapps.model.Booking;
+import org.clubapps.model.ClubOfficer;
 import org.clubapps.model.EmailMessage;
 import org.clubapps.model.Member;
 import org.clubapps.model.NewsStory;
 import org.clubapps.model.SessionPlan;
 import org.clubapps.model.SessionRecord;
 import org.clubapps.model.Team;
+import org.clubapps.model.Visitor;
 import org.clubapps.model.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -45,7 +49,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class RestApiController {
 	java.sql.Timestamp currentTimestamp = null;
 	private final Logger log = LoggerFactory.getLogger(RestApiController.class);
-	private final String version = "## SOFTWARE VERSION 0.3.0 ##";
+	private final String version = "## SOFTWARE VERSION 0.3.1 ##";
+	@Autowired
+	private Environment env;
 	
 	String availableMemory = "**** Max Heap MEMORY: " + Long.toString(Runtime.getRuntime().maxMemory()) + " ****";
 	
@@ -87,7 +93,7 @@ public class RestApiController {
 	
 	 }
 	 
-	 @RequestMapping(value="/teams",method = RequestMethod.GET,headers="Accept=application/json")
+	 @RequestMapping(value="/public/teams",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Team> getAllTeams() {
 		 log.debug(this.version);
 		 log.debug(availableMemory);
@@ -97,9 +103,11 @@ public class RestApiController {
 	
 	 }
 	 
-	 @RequestMapping(value="/stories",method = RequestMethod.GET,headers="Accept=application/json")
-	 public List<NewsStory> getNewsStories() {
+	 @RequestMapping(value="/public/stories",method = RequestMethod.GET,headers="Accept=application/json")
+	 public List<NewsStory> getNewsStories(HttpServletRequest req) {
 		 log.debug("##                        |-> getNewsStories()..");
+		 log.debug("The IP of the user is: " + req.getRemoteAddr());
+
 		 List<NewsStory> stories=dao.getNewsStories();
 		 log.debug("##                        |<- getNewsStories()..");
 		 return stories;
@@ -423,7 +431,7 @@ public class RestApiController {
 		 return user;	
 	 }
 	 
-	 @RequestMapping(value="/photos/{cat1}/{cat2}",method = RequestMethod.GET,headers="Accept=application/json")
+	 @RequestMapping(value="/public/photos/{cat1}/{cat2}",method = RequestMethod.GET,headers="Accept=application/json")
 	 public  List<String> getPhotoMedia(@PathVariable String cat1, @PathVariable String cat2) 
 	 {
 		 log.debug("## ->getPhotoMedia("+cat1+","+cat2+")");
@@ -432,7 +440,7 @@ public class RestApiController {
 		 return photos;	
 	 }
 	 
-	 @RequestMapping(value="/photos/{cat1}/{cat2}/{cat3}",method = RequestMethod.GET,headers="Accept=application/json")
+	 @RequestMapping(value="/public/photos/{cat1}/{cat2}/{cat3}",method = RequestMethod.GET,headers="Accept=application/json")
 	 public  List<String> getPhotoMedia(@PathVariable String cat1, @PathVariable String cat2, @PathVariable String cat3) 
 	 {
 		 log.debug("## ->getPhotoMedia("+cat1+","+cat2+","+cat3+")");
@@ -450,7 +458,7 @@ public class RestApiController {
 	 
 	 @RequestMapping(value="/academyregistration",method = RequestMethod.POST)
 	 public void addAcademyRegistration(@RequestBody Member member) {	
-		 log.debug("## ->addAcademyRegistration("+member+")");
+		 log.debug("## ->addAcademyRegistration("+member.getName()+")");
 		 dao.addMember( member);
 		 logMemberDetails(member);
 		 log.debug("## <-addAcademyRegistration()");
@@ -467,6 +475,58 @@ public class RestApiController {
 		}
 		 log.debug("## <-paypalIPNlistener()");
 	 }
+	 
+	 @RequestMapping(value="/public/officers",method = RequestMethod.GET,headers="Accept=application/json")
+	 public List<ClubOfficer> getOfficers() {
+		 log.debug("## [RestApiController]->getTeams()..");
+		 List<ClubOfficer> officers=dao.getOfficiers();
+		 return officers;
+	
+	 }
+	 
+	 @RequestMapping(value="/public/ivcount",method = RequestMethod.GET)
+	 public int incrementVisitorCount()
+	 {
+		 log.debug("## [RestApiController]->incrementVisitorCount()..");
+		 return dao.incrementVisitorCount();
+	 }
+	 
+	 @RequestMapping(value="/public/vcount",method = RequestMethod.GET)
+	 public void getVisitorCount(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
+	 {
+		 currentTimestamp = new java.sql.Timestamp(Calendar.getInstance().getTime().getTime());
+		 System.out.println("## [RestApiController]->getVisitorCount(" + currentTimestamp + ")");
+		 Date now = new Date();
+		 String ip = req.getRemoteAddr();
+		 Date last_access = null;
+		 String delay = env.getProperty("visitor.delay");
+		 
+		 System.out.println("THE DELAY VALUE IS: " + delay);
+		 
+		 // (1) See if there is an entry for this ip address
+		 Visitor visitor = dao.getVisitorDetails(ip);
+		 
+		 // (2) If an entry exists, check the last access timestamp, 
+		 //     if > 1 hr increament the count and return it
+		 if( visitor != null )
+		 {
+			 if( visitor.getAccess_date() != null ) // An entry exists
+			 {
+				 last_access = visitor.getAccess_date();
+				 long time = last_access.getTime();
+				 long nowtime = now.getTime();
+				 if( (time + Integer.parseInt(delay)) < nowtime )
+					 System.out.println("TIME IS LATER !!!!");
+				 else
+					 System.out.println("TIME IS __NOT__ LATER !!!!");
+			 }
+				 
+			 
+		 }
+		 
+		 
+	 }
+
 	 
 	 public void logMemberDetails( Member member )
 	 {

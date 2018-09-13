@@ -40,6 +40,7 @@ import org.apache.tomcat.util.http.fileupload.util.Streams;
 import org.clubapps.config.PaypalConfiguration;
 import org.clubapps.exceptions.IpnException;
 import org.clubapps.model.Booking;
+import org.clubapps.model.ClubOfficer;
 import org.clubapps.model.EmailMessage;
 import org.clubapps.model.IpnInfo;
 import org.clubapps.model.Media;
@@ -49,6 +50,7 @@ import org.clubapps.model.NewsStory;
 import org.clubapps.model.SessionPlan;
 import org.clubapps.model.SessionRecord;
 import org.clubapps.model.Team;
+import org.clubapps.model.Visitor;
 import org.clubapps.model.Worker;
 import org.clubapps.utility.DBUtility;
 import org.slf4j.Logger;
@@ -623,6 +625,75 @@ public class MySqlDAO {
 		  log.debug("           |<- getNewsStories()");
 		  return newsItems;
 	 }
+	 
+	 public int incrementVisitorCount() {
+		 log.debug("## (MySqlDAO) -> incrementVisitorCount()");
+		  Connection connection = null;
+		  int count = 0;
+		  Date d = new Date();
+		  java.sql.Date now = new java.sql.Date(d.getTime());
+		  
+		  if( (connection = DBUtility.getConnection()) == null )
+		   {
+			   log.error("Cannot get database connection!!");
+			   return (Integer) null;
+		   }
+		  
+		  try {
+				   PreparedStatement preparedStatement = connection.prepareStatement("update visitor_count set count = count + 1, access_date = ?");
+				   preparedStatement.setDate(1, now);
+				   boolean worked = preparedStatement.execute();
+				   
+				   preparedStatement = connection.prepareStatement("select * from visitor_count");
+				   ResultSet rs = preparedStatement.executeQuery();
+				   while(rs.next()) 
+				   {
+					   count = rs.getInt("count");
+				   }
+
+		  } catch (SQLException e) {
+		   e.printStackTrace();
+		  }
+	
+		  DBUtility.closeConnection();
+		  log.debug("## (MySqlDAO) <- incrementVisitorCount()");
+		  return count;
+	}
+	 
+	 public Visitor getVisitorDetails(String ip) {
+		 log.debug("## (MySqlDAO) -> getVisitorCount");
+		  Connection connection = null;
+		  
+		  Visitor visitor = new Visitor();
+		  
+		  if( (connection = DBUtility.getConnection()) == null )
+		   {
+			   log.error("Cannot get database connection!!");
+			   return null;
+		   }
+		  
+		  try {
+				   PreparedStatement preparedStatement = connection.prepareStatement("select * from visitor where ip=?");
+				   preparedStatement.setString(1, ip);
+				   ResultSet rs = preparedStatement.executeQuery();
+
+				   while (rs.next()) 
+				   {
+					    visitor.setId(rs.getInt("id"));
+					    visitor.setCount(rs.getInt("count"));
+					    visitor.setIp(rs.getString("ip"));
+					    visitor.setAccess_date(rs.getDate("access_date"));
+				   }
+		  } catch (SQLException e) {
+		   e.printStackTrace();
+		  }
+	
+		  DBUtility.closeConnection();
+		  log.debug("## (MySqlDAO) <- getVisitorCount");
+		  return visitor;
+	}
+	 
+	 
 	 public void uploadNews(HttpServletRequest request, HttpServletResponse res)
 	 {
 		// Check that we have a file upload request
@@ -2191,4 +2262,29 @@ public class MySqlDAO {
 		  return;
 	 }
 
+	 public List<ClubOfficer> getOfficiers() {
+		 log.debug("## (MySqlDAO) -> getOfficiers()");
+		  Connection connection = DBUtility.getConnection();
+		  List<ClubOfficer> officers = new ArrayList<ClubOfficer>();
+		  try {
+				   Statement statement = connection.createStatement();
+				   ResultSet rs = statement.executeQuery("select * from officers");
+				   while (rs.next()) 
+				   {
+					    ClubOfficer officer = new ClubOfficer();
+					    officer.setId(rs.getInt("id"));
+					    officer.setOffice(rs.getString("office"));
+					    officer.setName(rs.getString("name"));
+					    officer.setPhone(rs.getString("phone"));
+					    officer.setEmail(rs.getString("email"));
+					    officers.add(officer);
+				   }
+		  } catch (SQLException e) {
+		   e.printStackTrace();
+		  }
+	
+		  DBUtility.closeConnection();
+		  log.debug("## (MySqlDAO) <- getOfficers");
+		  return officers;
+	}
 }
