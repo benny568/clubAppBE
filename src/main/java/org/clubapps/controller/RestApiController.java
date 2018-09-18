@@ -33,7 +33,6 @@ import org.clubapps.model.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -71,7 +70,7 @@ public class RestApiController {
 
 	 @RequestMapping(value="/admin/team/{teamId}",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Member> getMembersByTeam(@PathVariable int teamId) {
-		 log.debug("## [RestApiController]->getMembersByTeam(" + teamId + ")");
+		 log.debug("## ->getMembersByTeam(" + teamId + ")");
 		 List<Member> members=dao.getMembersByTeam(teamId);
 		 return members;
 	
@@ -79,7 +78,7 @@ public class RestApiController {
 	 
 	 @RequestMapping(value="/admin/teams",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Team> getTeams() {
-		 log.debug("## [RestApiController]->getTeams()..");
+		 log.debug("## |-> getTeams()..");
 		 List<Team> teams=dao.getAllTeams();
 		 return teams;
 	
@@ -87,7 +86,7 @@ public class RestApiController {
 	 
 	 @RequestMapping(value="/admin/user",method = RequestMethod.POST,headers="Accept=application/json")
 	 public void createUser( @RequestBody Worker user ) {
-		 log.debug("## [RestApiController]->createUser(" + user.getName() + ")..");
+		 log.debug("## ->createUser(" + user.getName() + ")..");
 		 dao.addUser(user);
 		 return;
 	
@@ -97,26 +96,26 @@ public class RestApiController {
 	 public List<Team> getAllTeams() {
 		 log.debug(this.version);
 		 log.debug(availableMemory);
-		 log.debug("## [RestApiController]->getTeams()..");
+		 log.debug("## |-> getTeams()..");
 		 List<Team> teams=dao.getAllTeams();
+		 log.debug("## |<- getTeams()..");
 		 return teams;
 	
 	 }
 	 
 	 @RequestMapping(value="/public/stories",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<NewsStory> getNewsStories(HttpServletRequest req) {
-		 log.debug("##                        |-> getNewsStories()..");
-		 log.debug("The IP of the user is: " + req.getRemoteAddr());
+		 log.debug("## |-> getNewsStories()..");
 
 		 List<NewsStory> stories=dao.getNewsStories();
-		 log.debug("##                        |<- getNewsStories()..");
+		 log.debug("## |<- getNewsStories()..");
 		 return stories;
 	
 	 }
 	 
 	 @RequestMapping(value="/team/{teamName}",method = RequestMethod.GET,headers="Accept=application/json")
 	 public Team getTeamDetails(@PathVariable String teamName) {
-		 log.debug("## [RestApiController]->getTeamDetails(" + teamName + ")..");
+		 log.debug("## ->getTeamDetails(" + teamName + ")..");
 		 Team team=dao.getTeamDetails(teamName);
 		 return team;
 	
@@ -124,7 +123,7 @@ public class RestApiController {
 	 
 	 @RequestMapping(value="/teammembers/{teamName}",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Member> getMembersByTeam(@PathVariable String teamName) {
-		 log.debug("## [RestApiController]->getMembersByTeam(" + teamName + ")");
+		 log.debug("## ->getMembersByTeam(" + teamName + ")");
 		 List<Member> members=dao.getMembersByTeam(dao.getTeamId(teamName));
 		 return members;
 	
@@ -154,7 +153,7 @@ public class RestApiController {
 	 
 	 @RequestMapping(value="/admin/members",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Member> getAllTasks() {
-		 log.debug("## [RestApiController]->getAllTasks()..");
+		 log.debug("## ->getAllTasks()..");
 	  List<Member> members=dao.getAllMembers();
 	  return members;
 	
@@ -228,7 +227,7 @@ public class RestApiController {
 	 @RequestMapping(value="/admin/session",method = RequestMethod.POST)
 	 public void addTrainingSession(@RequestBody SessionPlan session)
 	 {
-		 System.out.println("## [RestApiController]->addTrainingSession(): " + session);
+		 System.out.println("## ->addTrainingSession(): " + session);
 		 dao.addTrainingSessionPlan(session);
 	 }
 	 
@@ -311,11 +310,6 @@ public class RestApiController {
 	      props.put("mail.smtp.starttls.enable", "true");
 	      props.put("mail.smtp.host", "mail.avenueunited.ie");//"mocha6004.mochahost.com");
 	      props.put("mail.smtp.port", "25");
-			
-	      //props.setProperty("mail.pop3.host","mocha6004.mochahost.com");//"mail.avenueunited.ie");
-	     // props.setProperty("mail.pop3.port", "110");
-	      //properties.setProperty("mail.smpt.port", "25");
-	      //properties.setProperty("mail.imap.port", "143");
 
 	      // Get the default Session object.
 	      Session session = Session.getInstance(props,
@@ -478,8 +472,9 @@ public class RestApiController {
 	 
 	 @RequestMapping(value="/public/officers",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<ClubOfficer> getOfficers() {
-		 log.debug("## [RestApiController]->getTeams()..");
+		 log.debug("## ->getOfficers()..");
 		 List<ClubOfficer> officers=dao.getOfficiers();
+		 log.debug("## <-getOfficers()..");
 		 return officers;
 	
 	 }
@@ -487,44 +482,19 @@ public class RestApiController {
 	 @RequestMapping(value="/public/ivcount",method = RequestMethod.GET)
 	 public int incrementVisitorCount()
 	 {
-		 log.debug("## [RestApiController]->incrementVisitorCount()..");
+		 log.debug("## ->incrementVisitorCount()..");
 		 return dao.incrementVisitorCount();
 	 }
 	 
 	 @RequestMapping(value="/public/vcount",method = RequestMethod.GET)
-	 public void getVisitorCount(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
+	 public int getVisitorCount(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
 	 {
 		 currentTimestamp = new java.sql.Timestamp(Calendar.getInstance().getTime().getTime());
-		 System.out.println("## [RestApiController]->getVisitorCount(" + currentTimestamp + ")");
-		 Date now = new Date();
-		 String ip = req.getRemoteAddr();
-		 Date last_access = null;
-		 String delay = env.getProperty("visitor.delay");
-		 
-		 System.out.println("THE DELAY VALUE IS: " + delay);
+		 log.debug("## ->getVisitorCount(" + currentTimestamp + ")");
 		 
 		 // (1) See if there is an entry for this ip address
-		 Visitor visitor = dao.getVisitorDetails(ip);
-		 
-		 // (2) If an entry exists, check the last access timestamp, 
-		 //     if > 1 hr increament the count and return it
-		 if( visitor != null )
-		 {
-			 if( visitor.getAccess_date() != null ) // An entry exists
-			 {
-				 last_access = visitor.getAccess_date();
-				 long time = last_access.getTime();
-				 long nowtime = now.getTime();
-				 if( (time + Integer.parseInt(delay)) < nowtime )
-					 System.out.println("TIME IS LATER !!!!");
-				 else
-					 System.out.println("TIME IS __NOT__ LATER !!!!");
-			 }
-				 
-			 
-		 }
-		 
-		 
+		 int vcount = dao.getVisitorCount();
+		 return vcount;	 
 	 }
 
 	 

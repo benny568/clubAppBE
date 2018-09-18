@@ -72,7 +72,7 @@ public class MySqlDAO {
 	
 	public void createUser( Worker user )
 	{
-		log.debug("## -> createUser(" + user.getName() + ")");
+		log.trace("## -> createUser(" + user.getName() + ")");
 		
 		try {
 			Connection connection = DBUtility.getConnection();
@@ -84,11 +84,11 @@ public class MySqlDAO {
 			   e.printStackTrace();
 		  }
 		
-		log.debug("## <- Return from createUser()");
+		log.trace("## <- Return from createUser()");
 	}
 	public User findByUsername( String username )
 	{
-		log.debug("## -> findByUsername(" + username + ")");
+		log.trace("## -> findByUsername(" + username + ")");
 		
 		String name = null;
 		String pass = null;
@@ -128,22 +128,22 @@ public class MySqlDAO {
 	  }
 
 	  DBUtility.closeConnection();
-	  log.debug("-------------------");
-	  log.debug("Username: " + name);
-	  log.debug("Password: " + pass);
-	  log.debug("Enabled:  " + enabled);
-	  log.debug("NotExp:  " + accountNonExpired);
-	  log.debug("CredNotExp:  " + credentialsNonExpired);
-	  log.debug("NotLocked: " + accountNonLocked);
-	  log.debug("Roles: " + auths.get(0).getAuthority());
-	  log.debug("-------------------");
-	  log.debug("## <- findByUsername()");
+	  log.trace("-------------------");
+	  log.trace("Username: " + name);
+	  log.trace("Password: " + pass);
+	  log.trace("Enabled:  " + enabled);
+	  log.trace("NotExp:  " + accountNonExpired);
+	  log.trace("CredNotExp:  " + credentialsNonExpired);
+	  log.trace("NotLocked: " + accountNonLocked);
+	  log.trace("Roles: " + auths.get(0).getAuthority());
+	  log.trace("-------------------");
+	  log.trace("## <- findByUsername()");
 	  return new User(name, pass, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked,auths);
 	}
 	
 	 public List<Member> getAllMembers() {
 
-		 log.debug("## -> getAllMembers()");
+		 log.trace("## -> getAllMembers()");
 		  List<Member> members = new ArrayList<Member>();
 		  try {
 			  	   Connection connection = DBUtility.getConnection();
@@ -183,12 +183,12 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## <- getAllMembers()");
+		  log.trace("## <- getAllMembers()");
 		  return members;
 	}
 	 public List<Member> getMembersByTeam(int teamId)
 	 {
-		 log.debug("## -> getMembersByTeam");
+		 log.trace("## -> getMembersByTeam");
 		 List<Member> members = new ArrayList<Member>();
 		 try {
 			   Connection connection = DBUtility.getConnection();
@@ -231,7 +231,7 @@ public class MySqlDAO {
 		  }
 	
 		 DBUtility.closeConnection();
-		 log.debug("## <- getMembersByTeam");
+		 log.trace("## <- getMembersByTeam");
 		 return members;
 	 }
 	 public void addMember(Member member)
@@ -335,13 +335,13 @@ public class MySqlDAO {
 			   return -1;
 			  }
 		  
-		  log.debug("##    Deleted member: " + memberId );
+		  log.trace("##    Deleted member: " + memberId );
 		  DBUtility.closeConnection();
 		  return memberId;
 	 }
 
 	 public List<Team> getAllTeams() {
-		 log.debug("## (MySqlDAO) -> getAllTeams");
+		 log.trace("##    -> getAllTeams");
 		  Connection connection = DBUtility.getConnection();
 		  List<Team> teams = new ArrayList<Team>();
 		  try {
@@ -364,7 +364,7 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## (MySqlDAO) <- getAllTeams");
+		  log.trace("##    <- getAllTeams");
 		  return teams;
 	}
 	 public int getTeamId(String teamName)
@@ -584,7 +584,7 @@ public class MySqlDAO {
 		 ArrayList<NewsStory> newsItems = new ArrayList<NewsStory>();
 		 Connection connection = null;
 
-		 log.debug("           |-> getNewsStories()");
+		 log.trace("   |-> getNewsStories()");
 		 
 		  try 
 		  {
@@ -599,7 +599,7 @@ public class MySqlDAO {
 			     //prepareStatement("select * from newsstory where category=?");
 			   //preparedStatement.setString(1, "G");
 			   ResultSet rs = preparedStatement.executeQuery();
-			   log.debug("          | -- running db select: select * from newsstory");
+			   log.trace("          | -- running db select: select * from newsstory");
 			   
 			   while(rs.next()) 
 			   {
@@ -610,24 +610,23 @@ public class MySqlDAO {
 				   ns.setDescription(rs.getString("description"));
 				   ns.setStory(rs.getString("story"));
 				   ns.setImage(rs.getString("image"));
-				   log.debug("          | -- Adding news story: " + ns);
+				   log.trace("          | -- Adding news story: " + ns);
 				   newsItems.add(ns);
 			   }	
 		  } 
 		  catch (SQLException e)
 		  {
-			  System.out.println("## CONNECTION CLOSED ?????????");
 			  System.err.println("## CONNECTION CLOSED ?????????");
 			  e.printStackTrace();
 		  }
 		  
 		  DBUtility.closeConnection();
-		  log.debug("           |<- getNewsStories()");
+		  log.trace("   |<- getNewsStories()");
 		  return newsItems;
 	 }
 	 
 	 public int incrementVisitorCount() {
-		 log.debug("## (MySqlDAO) -> incrementVisitorCount()");
+		 log.trace("## -> incrementVisitorCount()");
 		  Connection connection = null;
 		  int count = 0;
 		  Date d = new Date();
@@ -656,12 +655,41 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## (MySqlDAO) <- incrementVisitorCount()");
+		  log.trace("## <- incrementVisitorCount()");
 		  return count;
 	}
 	 
+	 public int getVisitorCount() {
+		 log.trace("##    -> getVisitorCount");
+		  Connection connection = null;
+		  
+		  int vcount = 0;
+		  
+		  if( (connection = DBUtility.getConnection()) == null )
+		   {
+			   log.error("Cannot get database connection!!");
+			   return 0;
+		   }
+		  
+		  try {
+				   PreparedStatement preparedStatement = connection.prepareStatement("select count from visitor_count");
+				   ResultSet rs = preparedStatement.executeQuery();
+
+				   while (rs.next()) 
+				   {
+					    vcount = rs.getInt("count");
+				   }
+		  } catch (SQLException e) {
+		   e.printStackTrace();
+		  }
+	
+		  DBUtility.closeConnection();
+		  log.trace("##    <- getVisitorCount(" + vcount + ")");
+		  return vcount;
+	}
+	 
 	 public Visitor getVisitorDetails(String ip) {
-		 log.debug("## (MySqlDAO) -> getVisitorCount");
+		 log.trace("##    -> getVisitorDetails");
 		  Connection connection = null;
 		  
 		  Visitor visitor = new Visitor();
@@ -689,7 +717,7 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## (MySqlDAO) <- getVisitorCount");
+		  log.trace("##    <- getVisitorDetails");
 		  return visitor;
 	}
 	 
@@ -784,23 +812,23 @@ public class MySqlDAO {
 		 {
 			 case "title":
 				 ns.setTitle(paramValue);
-				 System.out.println("## [MySqlDAO]->(addParamToNS) Added title to news story: " + paramValue);
+				 System.out.println("##    ->(addParamToNS) Added title to news story: " + paramValue);
 				 break;
 			 case "description":
 				 ns.setDescription(paramValue);
-				 System.out.println("## [MySqlDAO]->(addParamToNS) Added description to news story: " + paramValue);
+				 System.out.println("##    ->(addParamToNS) Added description to news story: " + paramValue);
 				 break;
 			 case "story":
 				 ns.setStory(paramValue);
-				 System.out.println("## [MySqlDAO]->(addParamToNS) Added story to news story: " + paramValue);
+				 System.out.println("##    ->(addParamToNS) Added story to news story: " + paramValue);
 				 break;
 			 case "image":
 				 ns.setImage(paramValue);
-				 System.out.println("## [MySqlDAO]->(addParamToNS) Added image to news story: " + paramValue);
+				 System.out.println("##    ->(addParamToNS) Added image to news story: " + paramValue);
 				 break;
 			 case "category":
 				 ns.setCategory(paramValue);
-				 System.out.println("## [MySqlDAO]->(addParamToNS) Added category to news story: " + paramValue);
+				 System.out.println("##    ->(addParamToNS) Added category to news story: " + paramValue);
 				 break;
 			 default:
 				 break;
@@ -1235,7 +1263,7 @@ public class MySqlDAO {
 
 			   if(!bGotRec)
 			   {
-				   System.out.println("## [MySqlDAO]->setSessionRecordForMember(): Record not found so need to add it...");
+				   System.out.println("##    ->setSessionRecordForMember(): Record not found so need to add it...");
 				   insertSessionRecordForMember(sr);
 			   }
 		
@@ -1287,7 +1315,7 @@ public class MySqlDAO {
 	 }
 	
 	 public List<Worker> getAllUsers() {
-		  log.debug("## -> getAllUsers()");
+		  log.trace("## -> getAllUsers()");
 		  List<Worker> users = new ArrayList<Worker>();
 		  
 		  try {
@@ -1295,7 +1323,7 @@ public class MySqlDAO {
 				   Statement statement = connection.createStatement();
 				   //ResultSet rs = statement.executeQuery("select * from user");
 				   ResultSet rs = statement.executeQuery("select * from user");
-				   log.debug("##    Executed query[select * from user]");
+				   log.trace("##    Executed query[select * from user]");
 				   while (rs.next()) 
 				   {
 					    Worker user = new Worker();
@@ -1309,11 +1337,11 @@ public class MySqlDAO {
 					    user.setDob(convertSqlDateToString(rs.getDate("dob")));
 					    user.setAvatar(rs.getString("avatar"));
 					    users.add(user);
-					    log.debug("##    Adding user to list: " + user.getName());
+					    log.trace("##    Adding user to list: " + user.getName());
 				   }
 				   
 				   rs = statement.executeQuery("select * from user_roles");
-				   log.debug("##    Executed query[select * from user_roles]");
+				   log.trace("##    Executed query[select * from user_roles]");
 				   List<Role> roles = new ArrayList<Role>();
 				   while (rs.next()) 
 				   {
@@ -1323,7 +1351,7 @@ public class MySqlDAO {
 					    role.setName(rs.getString("name"));
 					    role.setRole(new SimpleGrantedAuthority(rs.getString("role")));
 					    roles.add(role);
-					    log.debug("##    Adding role to list: " + role.getName());
+					    log.trace("##    Adding role to list: " + role.getName());
 				   }
 				   // Add the roles to the user
 //				   for( int i=0; i<users.size(); i++ )
@@ -1333,7 +1361,7 @@ public class MySqlDAO {
 //						   if( users.get(i).getUserId() == roles.get(a).userid )
 //						   {
 //							   users.get(i).getRoles().add(roles.get(a).role);
-//							   log.debug("##    Added role to user: " + users.get(i).getName() + ": " + roles.get(a).role);
+//							   log.trace("##    Added role to user: " + users.get(i).getName() + ": " + roles.get(a).role);
 //						   }
 //					   }
 //				   }
@@ -1343,7 +1371,7 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## <- getAllUsers()");
+		  log.trace("## <- getAllUsers()");
 		  return users;
 	}
 
@@ -1465,7 +1493,7 @@ public class MySqlDAO {
 	 }
 
 	 public List<Media> getAllMedia() {
-		 log.debug("## -> getAllMedia()");
+		 log.trace("## -> getAllMedia()");
 		  List<Media> medias = new ArrayList<Media>();
 		  try {
 			  	   Connection connection = DBUtility.getConnection();
@@ -1488,18 +1516,18 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## <- getAllMedia()");
+		  log.trace("## <- getAllMedia()");
 		  return medias;
 		 
 	 }
 	 
 	 public List<String> getPhotoMedia(String cat1, String cat2) {
-		 log.debug("## -> getPhotoMedia(" + cat1 + "," + cat2 + ")");
+		 log.trace("## -> getPhotoMedia(" + cat1 + "," + cat2 + ")");
 		 
 		 return getPhotoMedia(cat1, cat2, null);
 	 }
 	 public List<String> getPhotoMedia(String cat1, String cat2, String cat3) {
-		 log.debug("## -> getPhotoMedia(" + cat1 + "," + cat2 + "," + cat3 + ")");
+		 log.trace("## -> getPhotoMedia(" + cat1 + "," + cat2 + "," + cat3 + ")");
 		  List<String> photos = new ArrayList<String>();
 		  //String rootDir = "/Library/Tomcat8/webapps/galleries/";
 		  String rootDir = "/home/odalybr/jvm/apache-tomcat-8.0.9/domains/avenueunited.ie/galleries/";
@@ -1526,13 +1554,13 @@ public class MySqlDAO {
 		   e.printStackTrace();
 		  }
 	
-		  log.debug("## <- getPhotoMedia(): " + photos);
+		  log.trace("## <- getPhotoMedia(): " + photos);
 		  return photos;
 	 }
 		 
 	 
 	 public List<Media> getVideoMedia() {
-		 log.debug("## -> getVideoMedia()");
+		 log.trace("## -> getVideoMedia()");
 		  List<Media> medias = new ArrayList<Media>();
 		  try {
 			  	   Connection connection = DBUtility.getConnection();
@@ -1555,13 +1583,13 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## <- getVideoMedia()");
+		  log.trace("## <- getVideoMedia()");
 		  return medias;
 		 
 	 }
 	 
 	 public List<Media> getSoundMedia() {
-		 log.debug("## -> getSoundMedia()");
+		 log.trace("## -> getSoundMedia()");
 		  List<Media> medias = new ArrayList<Media>();
 		  try {
 			  	   Connection connection = DBUtility.getConnection();
@@ -1584,7 +1612,7 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## <- getSoundMedia()");
+		  log.trace("## <- getSoundMedia()");
 		  return medias;
 		 
 	 }
@@ -1634,7 +1662,7 @@ public class MySqlDAO {
 			  preparedStatement.setInt(14, booking.getTandc());
 			  preparedStatement.executeUpdate();
 			  
-			  log.debug("## ADDED BOOKING DETALS: " + preparedStatement);
+			  log.trace("## ADDED BOOKING DETALS: " + preparedStatement);
 		
 			  } catch (SQLException e) {
 			   e.printStackTrace();
@@ -1732,7 +1760,7 @@ public class MySqlDAO {
 
 	         // Send message
 	         Transport.send(message);
-	         log.debug("Sent message successfully: " + message);
+	         log.trace("Sent message successfully: " + message);
 	         System.out.println("Sent message successfully....");
 	         return true;
 	      }catch (MessagingException mex) {
@@ -1743,7 +1771,7 @@ public class MySqlDAO {
 	 
 	 public boolean sendRegistrationDetailsEmail(Member member) 
 	 {	
-		 log.debug("-----> sendRegistrationDetailsEmail()");
+		 log.trace("-----> sendRegistrationDetailsEmail()");
 		 EmailMessage msg = new EmailMessage();
 		 String destination = member.getEmail();
 		 msg.setSubject("Avenue United: Registration Details for " + member.getName() + " - Automated message, do not reply");
@@ -1847,12 +1875,12 @@ public class MySqlDAO {
 
 	         // Send message
 	         Transport.send(message);
-	         log.debug("Sent message successfully to (" + msg.getSenderAddress() + "): [" + msg.getMessage() + "]");
+	         log.trace("Sent message successfully to (" + msg.getSenderAddress() + "): [" + msg.getMessage() + "]");
 	         // Send a copy to Academy Director
 	         //sendRegistrationDetailsEmailCopy(msg.getMessage(), member);
 	         return true;
 	      }catch (MessagingException mex) {
-	    	 log.debug("sendRegistrationDetailsEmail(" + msg.getSenderAddress() + ") FAILED !!");
+	    	 log.trace("sendRegistrationDetailsEmail(" + msg.getSenderAddress() + ") FAILED !!");
 	         mex.printStackTrace();
 	         return false;
 	      }
@@ -1860,7 +1888,7 @@ public class MySqlDAO {
 	 
 	 public boolean sendRegistrationDetailsEmailCopy(String msgBody, Member member) 
 	 {	
-		 log.debug("-----> sendRegistrationDetailsEmailCopy()");
+		 log.trace("-----> sendRegistrationDetailsEmailCopy()");
 		 EmailMessage msg = new EmailMessage();
 		 String destination = "academy@avenueunited.ie";
 		 msg.setSubject("Avenue United: Registration Details - " + member.getName());
@@ -1902,12 +1930,12 @@ public class MySqlDAO {
 
 	         // Send message
 	         Transport.send(message);
-	         log.debug("Sent message successfully: " + message);
+	         log.trace("Sent message successfully: " + message);
 	         System.out.println("Sent message successfully....");
-	         log.debug("<===== sendRegistrationDetailsEmailCopy()");
+	         log.trace("<===== sendRegistrationDetailsEmailCopy()");
 	         return true;
 	      }catch (MessagingException mex) {
-	    	  log.debug("sendRegistrationDetailsEmailCopy() FAILED !!");
+	    	  log.trace("sendRegistrationDetailsEmailCopy() FAILED !!");
 	         mex.printStackTrace();
 	         return false;
 	      }
@@ -2252,7 +2280,7 @@ public class MySqlDAO {
 			  
 			  preparedStatement.executeUpdate();
 			  
-			  log.debug("## ADDED IPN DETALS");
+			  log.trace("## ADDED IPN DETALS");
 		
 			  } catch (SQLException e) {
 			   e.printStackTrace();
@@ -2263,7 +2291,7 @@ public class MySqlDAO {
 	 }
 
 	 public List<ClubOfficer> getOfficiers() {
-		 log.debug("## (MySqlDAO) -> getOfficiers()");
+		 log.trace("##    -> getOfficiers()");
 		  Connection connection = DBUtility.getConnection();
 		  List<ClubOfficer> officers = new ArrayList<ClubOfficer>();
 		  try {
@@ -2284,7 +2312,7 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.debug("## (MySqlDAO) <- getOfficers");
+		  log.trace("    <- getOfficers");
 		  return officers;
 	}
 }
