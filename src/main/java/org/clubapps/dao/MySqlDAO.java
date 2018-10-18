@@ -189,6 +189,7 @@ public class MySqlDAO {
 	 public List<Member> getMembersByTeam(int teamId)
 	 {
 		 log.trace("## -> getMembersByTeam");
+		 log.debug("## -> getMembersByTeam");
 		 List<Member> members = new ArrayList<Member>();
 		 try {
 			   Connection connection = DBUtility.getConnection();
@@ -224,6 +225,7 @@ public class MySqlDAO {
 				    member.setPhoto(rs.getString("photo"));
 				    member.setAchievements(rs.getString("achievements"));
 				    log.trace("##    Adding member to list: " + member);
+				    log.debug("##    Adding member to list: " + member);
 				    members.add(member);
 			   }
 		  } catch (SQLException e) {
@@ -232,6 +234,7 @@ public class MySqlDAO {
 	
 		 DBUtility.closeConnection();
 		 log.trace("## <- getMembersByTeam");
+		 log.debug("## <- getMembersByTeam");
 		 return members;
 	 }
 	 public void addMember(Member member)
@@ -628,9 +631,10 @@ public class MySqlDAO {
 	 public int incrementVisitorCount() {
 		 log.trace("## -> incrementVisitorCount()");
 		  Connection connection = null;
-		  int count = 0;
+		  int vcount = 0;
 		  Date d = new Date();
-		  java.sql.Date now = new java.sql.Date(d.getTime());
+		  java.sql.Timestamp now = new java.sql.Timestamp(d.getTime());
+		  java.sql.Timestamp lastAccessDate = null;
 		  
 		  if( (connection = DBUtility.getConnection()) == null )
 		   {
@@ -640,14 +644,15 @@ public class MySqlDAO {
 		  
 		  try {
 				   PreparedStatement preparedStatement = connection.prepareStatement("update visitor_count set count = count + 1, access_date = ?");
-				   preparedStatement.setDate(1, now);
+				   preparedStatement.setTimestamp(1, now);
 				   boolean worked = preparedStatement.execute();
 				   
 				   preparedStatement = connection.prepareStatement("select * from visitor_count");
 				   ResultSet rs = preparedStatement.executeQuery();
 				   while(rs.next()) 
 				   {
-					   count = rs.getInt("count");
+					   vcount = rs.getInt("count");
+					   lastAccessDate = rs.getTimestamp("access_date");
 				   }
 
 		  } catch (SQLException e) {
@@ -655,8 +660,8 @@ public class MySqlDAO {
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.trace("## <- incrementVisitorCount()");
-		  return count;
+		  log.debug("## <- incrementVisitorCount(" + vcount + ", " + lastAccessDate + ")");
+		  return vcount;
 	}
 	 
 	 public int getVisitorCount() {
@@ -664,6 +669,7 @@ public class MySqlDAO {
 		  Connection connection = null;
 		  
 		  int vcount = 0;
+		  java.sql.Timestamp lastAccessDate = null;
 		  
 		  if( (connection = DBUtility.getConnection()) == null )
 		   {
@@ -672,19 +678,20 @@ public class MySqlDAO {
 		   }
 		  
 		  try {
-				   PreparedStatement preparedStatement = connection.prepareStatement("select count from visitor_count");
+				   PreparedStatement preparedStatement = connection.prepareStatement("select count, access_date from visitor_count");
 				   ResultSet rs = preparedStatement.executeQuery();
 
 				   while (rs.next()) 
 				   {
 					    vcount = rs.getInt("count");
+					    lastAccessDate = rs.getTimestamp("access_date");
 				   }
 		  } catch (SQLException e) {
 		   e.printStackTrace();
 		  }
 	
 		  DBUtility.closeConnection();
-		  log.trace("##    <- getVisitorCount(" + vcount + ")");
+		  log.debug("##    <- getVisitorCount(" + vcount + ", " + lastAccessDate + ")");
 		  return vcount;
 	}
 	 
@@ -1060,100 +1067,53 @@ public class MySqlDAO {
 		DBUtility.closeConnection();
 		return thisUser;
 	}
+
 	public void updateUser(Worker user)
 	 {
-//        java.sql.Date sqlDate = null;
-//        SimpleDateFormat dateFormater = new SimpleDateFormat("dd/MM/yyyy");
-//        try {
-//			sqlDate = new java.sql.Date(dateFormater.parse(user.getDob()).getTime());
-//		 } catch (ParseException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//		 }
-//		 
-//		  try {
-//			    Connection connection = DBUtility.getConnection();
-//			  	PreparedStatement preparedStatement = connection.prepareStatement("UPDATE user set name=?,address=?,phone=?,email=?,dob=?,avatar=?,enabled=? where userid = ?");
-//			  	preparedStatement.setString(1, user.getName());
-//			  	//preparedStatement.setString(2, user.getPassword());
-//			  	preparedStatement.setString(2, user.getAddress());
-//			  	preparedStatement.setString(3, user.getPhone());
-//			  	preparedStatement.setString(4, user.getEmail());
-//			  	preparedStatement.setDate(5, sqlDate);
-//			  	preparedStatement.setString(6, user.getAvatar());
-//			  	preparedStatement.setBoolean(7, user.getEnabled());
-//			  	preparedStatement.setLong(8, user.getUserId());
-//			  	preparedStatement.executeUpdate();
-//			  	
-//			  	// (2) Update the user_roles table
-//				   
-//			  	// (2.1) We need to read the current roles to compare them
-//			  	ArrayList<Role> roles = new ArrayList<Role>();
-//			  	preparedStatement = connection.prepareStatement("select * from user_roles where userid=?");
-//			  	preparedStatement.setLong(1, user.getUserId());
-//			  	ResultSet rs = preparedStatement.executeQuery();
-//			  	
-//			  	// New stuff
-//			  	Role role = new Role();
-//			  	while( rs.next() )
-//			  	{
-//			  		role.setRoleid(rs.getInt("user_role_id"));
-//					role.setUserid(rs.getInt("userid"));
-//					role.setName(rs.getString("name"));
-//					role.setRole(new SimpleGrantedAuthority(rs.getString("role")));
-//			  	}
-//			  	
-//			  	////////////
-//				   
-////			  	while(rs.next()) {
-////					Role role = new Role();
-////					role.setRoleid(rs.getInt("user_role_id"));
-////					role.setUserid(rs.getInt("userid"));
-////					role.setName(rs.getString("name"));
-////					role.setRole(rs.getString("role"));
-////					roles.add(role);
-////				}
-//			  	
-//			  	// (3) Compare the existing roles with the passed in ones to see if there are updates
-//			  	ArrayList<String> rolesToAdd = new ArrayList<String>();
-//			  	boolean found = false;
-//			  	for( int i=0; i<user.getRoles().size(); i++ )
-//			  	{
-//			  		for( int n=0; n<roles.size(); n++ )
-//			  		{
-//			  			if( user.getRoles().get(i).getAuthority().contentEquals(roles.get(n).getRole().getAuthority()) )
-//			  			{
-//			  				found = true;
-//			  				continue;
-//			  			}
-//			  		}
-//			  		if( !found )
-//			  		{
-//			  			rolesToAdd.add(user.getRoles().get(i).getAuthority());
-//			  			System.out.println("#### GOT ONE #######: " + user.getRoles().get(i));
-//			  		}
-//			  		found = false;
-//			  	}
-//			   
-//			   // (2.2) Prep the SQL statement
-//			  preparedStatement = connection.prepareStatement("INSERT INTO user_roles ( userid, name, role ) VALUES (?, ?, ? )");
-//			   
-//			   // (2.3) For each role, add a row to the user_roles table
-//			   for( int i=0; i<rolesToAdd.size(); i++ )
-//			   {
-//				   preparedStatement.setLong(1, user.getUserId());
-//				   preparedStatement.setString(2, user.getName());
-//				   preparedStatement.setString(3, rolesToAdd.get(i));
-//				   preparedStatement.executeUpdate();
-//			   }
-//		
-//			  } catch (SQLException e) {
-//				  e.printStackTrace();
-//			  }
-//		  
-//		  DBUtility.closeConnection();
+		 java.sql.Date sqlDate = convertStringToSqlDate(user.getDob());
+
+		  try {
+			  	// (1) Open the db connection
+			    Connection connection = DBUtility.getConnection();
+			    // (2) Set auto commit off
+			    connection.setAutoCommit(false);
+			    
+			    // (3) Update the user table
+			  	PreparedStatement preparedStatement = connection.prepareStatement("UPDATE user set name=?, address=?, phone=?, email=?,"
+																+ "dob=?, avatar=?, enabled=? where userid=?");
+			  	preparedStatement.setString(1, user.getName());
+				preparedStatement.setString(2, user.getAddress());
+				preparedStatement.setString(3, user.getPhone());
+				preparedStatement.setString(4, user.getEmail());
+				preparedStatement.setDate(5, sqlDate);
+				preparedStatement.setString(6, user.getAvatar());
+				preparedStatement.setBoolean(7, user.getEnabled());
+				preparedStatement.setLong(8, user.getUserId());
+			   
+				int rowsAffected = preparedStatement.executeUpdate();
+			  	
+			  	// (4) Update the user_roles table
+				if( rowsAffected == 1 ) // The update of the user table worked
+				{
+					preparedStatement = connection.prepareStatement("UPDATE user_roles set name=?, role=? where userid=?");
+					preparedStatement.setString(1, user.getName());
+					preparedStatement.setString(2, user.getRole());
+					preparedStatement.setLong(3, user.getUserId());
+					preparedStatement.executeUpdate();
+			  	
+				  	// (5) Commit the transaction
+				  	connection.commit();
+				}
+		
+			  } catch (SQLException e) {
+				  e.printStackTrace();
+			  }
+		  
+		  DBUtility.closeConnection();
 		  return;
 	 }
+
+
 	public void updateUserPassword(Worker user)
 	 {
 		 
@@ -1171,7 +1131,8 @@ public class MySqlDAO {
 		  DBUtility.closeConnection();
 		  return;
 	 }
-	public void deleteUser(Worker user)
+
+	public void deleteUser(int id)
 	 {
 		 
 		  try {
@@ -1184,12 +1145,12 @@ public class MySqlDAO {
 			    
 			    // (3) Need to delete the user roles first from the user_roles table
 			  	preparedStatement = connection.prepareStatement("DELETE from user_roles where userid = ?");
-			  	preparedStatement.setLong(1, user.getUserId());
+			  	preparedStatement.setLong(1, id);
 			  	preparedStatement.executeUpdate();
 			  	
 			  	// (4) Delete the user from the user table
 			  	preparedStatement = connection.prepareStatement("DELETE from user where userid = ?");
-			  	preparedStatement.setLong(1, user.getUserId());
+			  	preparedStatement.setLong(1, id);
 			  	preparedStatement.executeUpdate();
 			  	
 			  	// (5) Commit the transaction
@@ -1336,8 +1297,10 @@ public class MySqlDAO {
 					    //user.setDob(df.format(rs.getDate("dob")));
 					    user.setDob(convertSqlDateToString(rs.getDate("dob")));
 					    user.setAvatar(rs.getString("avatar"));
+					    user.setEnabled(rs.getBoolean("enabled"));
 					    users.add(user);
 					    log.trace("##    Adding user to list: " + user.getName());
+					    System.out.println("##    Adding user to list: " + user.getUserId());
 				   }
 				   
 				   rs = statement.executeQuery("select * from user_roles");
@@ -1354,17 +1317,17 @@ public class MySqlDAO {
 					    log.trace("##    Adding role to list: " + role.getName());
 				   }
 				   // Add the roles to the user
-//				   for( int i=0; i<users.size(); i++ )
-//				   {
-//					   for( int a=0; a<roles.size(); a++ )
-//					   {
-//						   if( users.get(i).getUserId() == roles.get(a).userid )
-//						   {
-//							   users.get(i).getRoles().add(roles.get(a).role);
-//							   log.trace("##    Added role to user: " + users.get(i).getName() + ": " + roles.get(a).role);
-//						   }
-//					   }
-//				   }
+				   for( int i=0; i<users.size(); i++ )
+				   {
+					   for( int a=0; a<roles.size(); a++ )
+					   {
+						   if( users.get(i).getUserId() == roles.get(a).userid )
+						   {
+							   users.get(i).setRole(roles.get(a).role.getAuthority());
+							   log.trace("##    Added role to user: " + users.get(i).getName() + ": " + roles.get(a).role);
+						   }
+					   }
+				   }
 				   
 		  } catch (SQLException e) {
 		   e.printStackTrace();
@@ -1427,14 +1390,14 @@ public class MySqlDAO {
 	 public java.sql.Date convertStringToSqlDate( String sDate )
 	 {
 		 java.sql.Date sqlDate = null;
-		 DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		 DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
 		 
 		 Date parsed = null;
 		try {
 			if( sDate != null && !sDate.isEmpty() )
 				parsed = df.parse(sDate);
 			else
-				parsed = df.parse("01/01/1900");
+				parsed = df.parse("1900-01-01");
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1557,36 +1520,77 @@ public class MySqlDAO {
 		  log.trace("## <- getPhotoMedia(): " + photos);
 		  return photos;
 	 }
-		 
+
 	 
-	 public List<Media> getVideoMedia() {
-		 log.trace("## -> getVideoMedia()");
-		  List<Media> medias = new ArrayList<Media>();
+	 public List<String> getVideoMedia(String cat1, String cat2) {
+		 log.trace("## -> getVideoMedia(" + cat1 + "," + cat2 + ")");
+		 
+		 return getVideoMedia(cat1, cat2, null);
+	 }
+	 public List<String> getVideoMedia(String cat1, String cat2, String cat3) {
+		 log.trace("## -> getVideoMedia(" + cat1 + "," + cat2 + "," + cat3 + ")");
+		  List<String> videos = new ArrayList<String>();
+		  //String rootDir = "/Library/Tomcat8/webapps/videos/";
+		  String rootDir = "/home/odalybr/jvm/apache-tomcat-8.0.9/domains/avenueunited.ie/videos/";
+		  
 		  try {
-			  	   Connection connection = DBUtility.getConnection();
-				   Statement statement = connection.createStatement();
-				   ResultSet rs = statement.executeQuery("select * from media where type = 1");
-				   log.trace("##    Executed query[select * from media where type = 1]");
-				   while (rs.next()) 
-				   {
-					    Media media = new Media();
-					    media.setMediaid(rs.getInt("mediaid"));
-					    media.setType(rs.getInt("type"));
-					    media.setTitle(rs.getString("title"));
-					    media.setLocation(rs.getString("location"));
-					    media.setDescription(rs.getString("description"));				    
-					    medias.add(media);
-					    log.trace("##    Adding media to list: " + media);
-				   }
-		  } catch (SQLException e) {
+			  
+			  	// Read the file system for the gallery photos
+			  	// cat1 & cat2 are used as directories in the path	
+
+				File folder = cat3 == null ? new File(rootDir + cat1 + "/" + cat2) : new File(rootDir + cat1 + "/" + cat2 + "/" + cat3);
+				log.debug("##    Folder: [" + folder + "]");
+				File[] listOfFiles = folder.listFiles();
+				
+				if( listOfFiles == null )
+				{
+					log.debug("##    No video files found!");
+					return videos;
+				}
+								
+				for (File file : listOfFiles) {
+				    if( file.isFile() && (fileIsVideo(file.getName())) ) {
+				    	videos.add(file.getName());
+					    log.debug("##    Adding video to list: " + file.getName());
+				    }
+				}
+				Collections.sort(videos);
+			  } catch (Exception e) {
 		   e.printStackTrace();
 		  }
 	
-		  DBUtility.closeConnection();
-		  log.trace("## <- getVideoMedia()");
-		  return medias;
-		 
+		  log.trace("## <- getVideoMedia(): " + videos);
+		  return videos;
 	 }
+	 
+//	 public List<Media> getVideoMedia() {
+//		 log.trace("## -> getVideoMedia()");
+//		  List<Media> medias = new ArrayList<Media>();
+//		  try {
+//			  	   Connection connection = DBUtility.getConnection();
+//				   Statement statement = connection.createStatement();
+//				   ResultSet rs = statement.executeQuery("select * from media where type = 1");
+//				   log.trace("##    Executed query[select * from media where type = 1]");
+//				   while (rs.next()) 
+//				   {
+//					    Media media = new Media();
+//					    media.setMediaid(rs.getInt("mediaid"));
+//					    media.setType(rs.getInt("type"));
+//					    media.setTitle(rs.getString("title"));
+//					    media.setLocation(rs.getString("location"));
+//					    media.setDescription(rs.getString("description"));				    
+//					    medias.add(media);
+//					    log.trace("##    Adding media to list: " + media);
+//				   }
+//		  } catch (SQLException e) {
+//		   e.printStackTrace();
+//		  }
+//	
+//		  DBUtility.closeConnection();
+//		  log.trace("## <- getVideoMedia()");
+//		  return medias;
+//		 
+//	 }
 	 
 	 public List<Media> getSoundMedia() {
 		 log.trace("## -> getSoundMedia()");
@@ -1624,6 +1628,20 @@ public class MySqlDAO {
 		 if( filename.endsWith(".jpg")
 			 || filename.endsWith(".JPG")
 			 || filename.endsWith(".png") )
+		 {
+			 isImage = true;
+		 }
+		 
+		 return isImage;
+	 }
+	 
+	 boolean fileIsVideo( String filename )
+	 {
+		 boolean isImage = false;
+		 
+		 if( filename.endsWith(".mp4")
+			 || filename.endsWith(".avi")
+			 || filename.endsWith(".mpg") )
 		 {
 			 isImage = true;
 		 }

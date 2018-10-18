@@ -72,6 +72,7 @@ public class RestApiController {
 	 public List<Member> getMembersByTeam(@PathVariable int teamId) {
 		 log.debug("## ->getMembersByTeam(" + teamId + ")");
 		 List<Member> members=dao.getMembersByTeam(teamId);
+		 log.debug("## <-getMembersByTeam(" + teamId + ")");
 		 return members;
 	
 	 }
@@ -283,9 +284,9 @@ public class RestApiController {
 		 dao.updateUserPassword( user );
 	 }
 	 
-	 @RequestMapping(value="/admin/user",method = RequestMethod.DELETE)
-	 public void deleteUser(@RequestBody Worker user) {	 
-		 dao.deleteUser( user );
+	 @RequestMapping(value="/admin/user/{id}",method = RequestMethod.DELETE)
+	 public void deleteUser(@PathVariable int id) {	 
+		 dao.deleteUser( id );
 	 }
 	 
 	 @RequestMapping(value="/admin/users",method = RequestMethod.GET,headers="Accept=application/json")
@@ -422,7 +423,7 @@ public class RestApiController {
 		 log.debug("## ->getManagerDetails()");
 		 Worker user = dao.getUserByName(name);
 		 log.debug("## <-getManagerDetails(): " + user);
-		 return user;	
+		 return user;
 	 }
 	 
 	 @RequestMapping(value="/public/photos/{cat1}/{cat2}",method = RequestMethod.GET,headers="Accept=application/json")
@@ -441,6 +442,24 @@ public class RestApiController {
 		 List<String> photos = dao.getPhotoMedia(cat1, cat2, cat3);
 		 log.debug("## <-getPhotoMedia(): " + photos);
 		 return photos;	
+	 }
+	 
+	 @RequestMapping(value="/public/videos/{cat1}/{cat2}",method = RequestMethod.GET,headers="Accept=application/json")
+	 public  List<String> getVideoMedia(@PathVariable String cat1, @PathVariable String cat2) 
+	 {
+		 log.debug("## ->getVideoMedia("+cat1+","+cat2+")");
+		 List<String> videos = dao.getVideoMedia(cat1, cat2);
+		 log.debug("## <-getVideoMedia(): " + videos);
+		 return videos;	
+	 }
+	 
+	 @RequestMapping(value="/public/videos/{cat1}/{cat2}/{cat3}",method = RequestMethod.GET,headers="Accept=application/json")
+	 public  List<String> getVideoMedia(@PathVariable String cat1, @PathVariable String cat2, @PathVariable String cat3) 
+	 {
+		 log.debug("## ->getVideoMedia("+cat1+","+cat2+","+cat3+")");
+		 List<String> videos = dao.getVideoMedia(cat1, cat2, cat3);
+		 log.debug("## <-getVideoMedia(): " + videos);
+		 return videos;	
 	 }
 	 
 	 @RequestMapping(value="/booking",method = RequestMethod.POST)
