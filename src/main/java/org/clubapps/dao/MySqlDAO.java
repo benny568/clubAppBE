@@ -148,7 +148,7 @@ public class MySqlDAO {
 		  try {
 			  	   Connection connection = DBUtility.getConnection();
 				   Statement statement = connection.createStatement();
-				   ResultSet rs = statement.executeQuery("select * from member");
+				   ResultSet rs = statement.executeQuery("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements from member");
 				   log.trace("##    Executed query[select * from member]");
 				   while (rs.next()) 
 				   {
@@ -158,7 +158,8 @@ public class MySqlDAO {
 					    member.setAddress(rs.getString("address")); 
 					    member.setPhone(rs.getString("phone"));
 					    member.setPhone(rs.getString("phone2"));
-					    member.setDob(convertSqlDateToString((rs.getDate("dob"))));
+					    //member.setDob(convertSqlDateToString((rs.getDate("dob"))));
+					    member.setDob(rs.getString("dob"));
 					    member.setEmail(rs.getString("email"));
 					    member.setAmount(rs.getString("amount"));
 					    member.setTeam(rs.getInt("team"));
@@ -193,7 +194,9 @@ public class MySqlDAO {
 		 List<Member> members = new ArrayList<Member>();
 		 try {
 			   Connection connection = DBUtility.getConnection();
-			   PreparedStatement preparedStatement = connection.prepareStatement("select * from member where team=? or team2=? or team3=?");
+			   // SELECT DATE_FORMAT(CURDATE(), '%m/%d/%Y') today;
+			   PreparedStatement preparedStatement = connection.prepareStatement("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements from member where team=? or team2=? or team3=?");
+			   //PreparedStatement preparedStatement = connection.prepareStatement("select * from member where team=? or team2=? or team3=?");
 			   preparedStatement.setInt(1, teamId);
 			   preparedStatement.setInt(2, teamId);
 			   preparedStatement.setInt(3, teamId);
@@ -207,7 +210,8 @@ public class MySqlDAO {
 				    member.setPhone(rs.getString("phone"));
 				    member.setPhone2(rs.getString("phone2"));
 				    member.setEmail(rs.getString("email"));
-				    member.setDob(convertSqlDateToString(rs.getDate("dob")));
+				    member.setDob(rs.getString("dob"));
+				    //member.setDob(convertSqlDateToString(rs.getDate("dob")));
 				    member.setAmount(rs.getString("amount"));
 				    member.setTeam(rs.getInt("team"));
 				    member.setTeam2(rs.getInt("team2"));
@@ -240,7 +244,7 @@ public class MySqlDAO {
 	 public void addMember(Member member)
 	 {
 		 java.sql.Date sqlDate = null;
-		 sqlDate = convertStringToSqlDate(member.getDob());
+		 sqlDate = convertStringToSqlDate( member.getDob() );
 		 
 		  try {
 			  Connection connection = DBUtility.getConnection();
@@ -282,7 +286,10 @@ public class MySqlDAO {
 	 public void updateMemberDetails(Member member)
 	 {
 		 java.sql.Date sqlDate = null;
-		 sqlDate = convertStringToSqlDate(member.getDob());
+		 String dob = member.getDob();
+		 if( dob.contains("/") )
+			 dob = replaceSlashWithDashInDate(member.getDob());
+		 sqlDate = convertStringToSqlDate(dob);
 		 
 		  try {
 			   Connection connection = DBUtility.getConnection();
@@ -1022,7 +1029,8 @@ public class MySqlDAO {
 				   thisUser.setAddress(rs.getString("address"));
 				   thisUser.setEmail(rs.getString("email"));
 				   thisUser.setPhone(rs.getString("phone"));
-				   thisUser.setDob(df.format(rs.getDate("dob")));
+				   thisUser.setDob(rs.getDate("dob"));
+				   //thisUser.setDob(df.format(rs.getDate("dob")));
 				   thisUser.setAvatar(rs.getString("avatar"));
 				   thisUser.setEnabled(rs.getBoolean("enabled"));
 			   }
@@ -1070,7 +1078,8 @@ public class MySqlDAO {
 
 	public void updateUser(Worker user)
 	 {
-		 java.sql.Date sqlDate = convertStringToSqlDate(user.getDob());
+		 //java.sql.Date sqlDate = convertStringToSqlDate(user.getDob());
+		 java.sql.Date sqlDate = user.getDob();
 
 		  try {
 			  	// (1) Open the db connection
@@ -1294,8 +1303,8 @@ public class MySqlDAO {
 					    user.setAddress(rs.getString("address")); 
 					    user.setPhone(rs.getString("phone"));
 					    user.setEmail(rs.getString("email"));
-					    //user.setDob(df.format(rs.getDate("dob")));
-					    user.setDob(convertSqlDateToString(rs.getDate("dob")));
+					    user.setDob(rs.getDate("dob"));
+					    //user.setDob(convertSqlDateToString(rs.getDate("dob")));
 					    user.setAvatar(rs.getString("avatar"));
 					    user.setEnabled(rs.getBoolean("enabled"));
 					    users.add(user);
@@ -1340,7 +1349,8 @@ public class MySqlDAO {
 
 	 public void addUser(Worker user)
 	 {
-		 java.sql.Date sqlDate = convertStringToSqlDate(user.getDob());
+		 //java.sql.Date sqlDate = convertStringToSqlDate(user.getDob());
+		 java.sql.Date sqlDate = user.getDob();
 
 		  try {
 			  Connection connection = DBUtility.getConnection();
@@ -1405,6 +1415,16 @@ public class MySqlDAO {
 		sqlDate = new java.sql.Date(parsed.getTime());
 		 
 		 return sqlDate;
+	 }
+	 
+	 public String replaceSlashWithDashInDate( String inDate )
+	 {
+		 String outDate = "";
+		 
+		 // Check if the date has '/' as deliminator
+		 if( inDate.contains("/") )
+			 outDate = inDate.replace('/', '-');
+		 return outDate;
 	 }
 	 
 	 public String convertSqlDateToString( java.sql.Date sqlDate )

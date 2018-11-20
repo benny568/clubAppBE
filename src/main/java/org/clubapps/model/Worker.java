@@ -1,5 +1,6 @@
 package org.clubapps.model;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class Worker {
 	private String address;
 	private String email;
 	private String phone;
-	private String dob;
+	private Date dob;
 	private String avatar;
 	private boolean enabled;
 	//private List<SimpleGrantedAuthority> roles;
@@ -52,11 +53,11 @@ public class Worker {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
-	public String getDob() {
+	public Date getDob() {
 		return dob;
 	}
-	public void setDob(String dob) {
-		this.dob = dob;
+	public void setDob(Date date) {
+		this.dob = date;
 	}
 	public String getAvatar() {
 		return avatar;

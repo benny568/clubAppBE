@@ -3,7 +3,6 @@ package org.clubapps.controller;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,7 +27,6 @@ import org.clubapps.model.NewsStory;
 import org.clubapps.model.SessionPlan;
 import org.clubapps.model.SessionRecord;
 import org.clubapps.model.Team;
-import org.clubapps.model.Visitor;
 import org.clubapps.model.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,9 +151,9 @@ public class RestApiController {
 	 }
 	 
 	 @RequestMapping(value="/admin/members",method = RequestMethod.GET,headers="Accept=application/json")
-	 public List<Member> getAllTasks() {
-		 log.debug("## ->getAllTasks()..");
-	  List<Member> members=dao.getAllMembers();
+	 public List<Member> getAllMembers() {
+		 log.debug("## ->getAllMembers()..");
+		 List<Member> members=dao.getAllMembers();
 	  return members;
 	
 	 }
