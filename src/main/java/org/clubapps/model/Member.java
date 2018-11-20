@@ -1,7 +1,5 @@
 package org.clubapps.model;
 
-import java.sql.Date;
-
 public class Member {
 	
 	 private int id;
@@ -12,6 +10,7 @@ public class Member {
 	 private String email;
 	 private String dob;
 	 private String amount;		// Amount paid to date
+	 private String paydate;
 	 private String receiptid;
 	 private int team;
 	 private int team2;			// Can be a member of a second team
@@ -62,6 +61,12 @@ public class Member {
 	}
 	public void setAmount(String amount) {
 		this.amount = amount;
+	}
+	public String getPaydate() {
+		return paydate;
+	}
+	public void setPaydate(String paydate) {
+		this.paydate = paydate;
 	}
 	public int getTeam() {
 	  return team;

@@ -148,7 +148,7 @@ public class MySqlDAO {
 		  try {
 			  	   Connection connection = DBUtility.getConnection();
 				   Statement statement = connection.createStatement();
-				   ResultSet rs = statement.executeQuery("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements from member");
+				   ResultSet rs = statement.executeQuery("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, paydate, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements from member");
 				   log.trace("##    Executed query[select * from member]");
 				   while (rs.next()) 
 				   {
@@ -162,6 +162,7 @@ public class MySqlDAO {
 					    member.setDob(rs.getString("dob"));
 					    member.setEmail(rs.getString("email"));
 					    member.setAmount(rs.getString("amount"));
+					    member.setPaydate(rs.getString("paydate"));
 					    member.setTeam(rs.getInt("team"));
 					    member.setTeam2(rs.getInt("team2"));
 					    member.setTeam3(rs.getInt("team3"));
@@ -195,7 +196,7 @@ public class MySqlDAO {
 		 try {
 			   Connection connection = DBUtility.getConnection();
 			   // SELECT DATE_FORMAT(CURDATE(), '%m/%d/%Y') today;
-			   PreparedStatement preparedStatement = connection.prepareStatement("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements from member where team=? or team2=? or team3=?");
+			   PreparedStatement preparedStatement = connection.prepareStatement("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, paydate, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements from member where team=? or team2=? or team3=?");
 			   //PreparedStatement preparedStatement = connection.prepareStatement("select * from member where team=? or team2=? or team3=?");
 			   preparedStatement.setInt(1, teamId);
 			   preparedStatement.setInt(2, teamId);
@@ -213,6 +214,7 @@ public class MySqlDAO {
 				    member.setDob(rs.getString("dob"));
 				    //member.setDob(convertSqlDateToString(rs.getDate("dob")));
 				    member.setAmount(rs.getString("amount"));
+				    member.setPaydate(rs.getString("paydate"));
 				    member.setTeam(rs.getInt("team"));
 				    member.setTeam2(rs.getInt("team2"));
 				    member.setTeam3(rs.getInt("team3"));
@@ -249,8 +251,8 @@ public class MySqlDAO {
 		  try {
 			  Connection connection = DBUtility.getConnection();
 			  PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO member ( name, address, phone, phone2, email,"
-			   																	+ "dob, amount, team, team2, team3, position, lid, favteam, "
-			   																	+ "favplayer, sappears, sassists, sgoals, photo, "
+			   																	+ "dob, amount, paydate, team, team2, team3, position, lid, "
+			   																	+ "favteam, favplayer, sappears, sassists, sgoals, photo, "
 			   																	+ "achievements, status, academyinfo ) VALUES (?, ?, ?, ?, ?,"
 			   																	+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			  preparedStatement.setString(1, member.getName());
@@ -260,20 +262,21 @@ public class MySqlDAO {
 			   preparedStatement.setString(5, member.getEmail());
 			   preparedStatement.setDate(6, sqlDate);
 			   preparedStatement.setString(7, member.getAmount());
-			   preparedStatement.setInt(8, member.getTeam());
-			   preparedStatement.setInt(9, member.getTeam2());
-			   preparedStatement.setInt(10, member.getTeam3());
-			   preparedStatement.setInt(11, member.getPosition());
-			   preparedStatement.setInt(12, member.getLid());
-			   preparedStatement.setString(13, member.getFavteam());
-			   preparedStatement.setString(14, member.getFavplayer());
-			   preparedStatement.setInt(15, member.getSappears());
-			   preparedStatement.setInt(16, member.getSassists());
-			   preparedStatement.setInt(17, member.getSgoals());
-			   preparedStatement.setString(18, member.getPhoto());
-			   preparedStatement.setString(19, member.getAchievements());
-			   preparedStatement.setString(20, member.getStatus());
-			   preparedStatement.setString(21, member.getAcademyinfo());
+			   preparedStatement.setString(8, member.getPaydate());
+			   preparedStatement.setInt(9, member.getTeam());
+			   preparedStatement.setInt(10, member.getTeam2());
+			   preparedStatement.setInt(11, member.getTeam3());
+			   preparedStatement.setInt(12, member.getPosition());
+			   preparedStatement.setInt(13, member.getLid());
+			   preparedStatement.setString(14, member.getFavteam());
+			   preparedStatement.setString(15, member.getFavplayer());
+			   preparedStatement.setInt(16, member.getSappears());
+			   preparedStatement.setInt(17, member.getSassists());
+			   preparedStatement.setInt(18, member.getSgoals());
+			   preparedStatement.setString(19, member.getPhoto());
+			   preparedStatement.setString(20, member.getAchievements());
+			   preparedStatement.setString(21, member.getStatus());
+			   preparedStatement.setString(22, member.getAcademyinfo());
 			   preparedStatement.executeUpdate();
 		
 			  } catch (SQLException e) {
@@ -294,7 +297,7 @@ public class MySqlDAO {
 		  try {
 			   Connection connection = DBUtility.getConnection();
 			   PreparedStatement preparedStatement = connection.prepareStatement("update member set name=?, address=?, phone=?, phone2=?, dob=?, email=?,"
-			   																	+ "amount=?, receiptid=?, team=?, team2=?, team3=?, position=?, position2=?, "
+			   																	+ "amount=?, paydate=?, receiptid=?, team=?, team2=?, team3=?, position=?, position2=?, "
 			   																	+ "position3=?, lid=?, favteam=?, favplayer=?, sappears=?, sassists=?, sgoals=?, "
 			   																	+ "photo=?, achievements=?, status=? where id=?");
 			   preparedStatement.setString(1, member.getName());
@@ -304,23 +307,24 @@ public class MySqlDAO {
 			   preparedStatement.setDate(5, sqlDate);
 			   preparedStatement.setString(6, member.getEmail());
 			   preparedStatement.setString(7, member.getAmount());
-			   preparedStatement.setString(8, member.getReceiptid());
-			   preparedStatement.setInt(9, member.getTeam());
-			   preparedStatement.setInt(10, member.getTeam2());
-			   preparedStatement.setInt(11, member.getTeam3());
-			   preparedStatement.setInt(12, member.getPosition());
-			   preparedStatement.setInt(13, member.getPosition2());
-			   preparedStatement.setInt(14, member.getPosition3());
-			   preparedStatement.setInt(15, member.getLid());			   
-			   preparedStatement.setString(16, member.getFavteam());
-			   preparedStatement.setString(17, member.getFavplayer());
-			   preparedStatement.setInt(18, member.getSappears());
-			   preparedStatement.setInt(19, member.getSassists());
-			   preparedStatement.setInt(20, member.getSgoals());
-			   preparedStatement.setString(21, member.getPhoto());
-			   preparedStatement.setString(22, member.getAchievements());
-			   preparedStatement.setString(23, member.getStatus());
-			   preparedStatement.setInt(24, member.getId());			   			   
+			   preparedStatement.setString(8, member.getPaydate());
+			   preparedStatement.setString(9, member.getReceiptid());
+			   preparedStatement.setInt(10, member.getTeam());
+			   preparedStatement.setInt(11, member.getTeam2());
+			   preparedStatement.setInt(12, member.getTeam3());
+			   preparedStatement.setInt(13, member.getPosition());
+			   preparedStatement.setInt(14, member.getPosition2());
+			   preparedStatement.setInt(15, member.getPosition3());
+			   preparedStatement.setInt(16, member.getLid());			   
+			   preparedStatement.setString(17, member.getFavteam());
+			   preparedStatement.setString(18, member.getFavplayer());
+			   preparedStatement.setInt(19, member.getSappears());
+			   preparedStatement.setInt(20, member.getSassists());
+			   preparedStatement.setInt(21, member.getSgoals());
+			   preparedStatement.setString(22, member.getPhoto());
+			   preparedStatement.setString(23, member.getAchievements());
+			   preparedStatement.setString(24, member.getStatus());
+			   preparedStatement.setInt(25, member.getId());			   			   
 			   preparedStatement.executeUpdate();
 		
 			  } catch (SQLException e) {
