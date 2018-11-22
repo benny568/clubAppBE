@@ -12,7 +12,9 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -246,7 +248,7 @@ public class MySqlDAO {
 	 public void addMember(Member member)
 	 {
 		 java.sql.Date sqlDate = null;
-		 sqlDate = convertStringToSqlDate( member.getDob() );
+		 sqlDate = convertStringToSqlDate( member.getDob(), "yyyy/mm/dd" );				 
 		 
 		  try {
 			  Connection connection = DBUtility.getConnection();
@@ -254,7 +256,7 @@ public class MySqlDAO {
 			   																	+ "dob, amount, paydate, team, team2, team3, position, lid, "
 			   																	+ "favteam, favplayer, sappears, sassists, sgoals, photo, "
 			   																	+ "achievements, status, academyinfo ) VALUES (?, ?, ?, ?, ?,"
-			   																	+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			   																	+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			  preparedStatement.setString(1, member.getName());
 			   preparedStatement.setString(2, member.getAddress());
 			   preparedStatement.setString(3, member.getPhone());
@@ -262,7 +264,7 @@ public class MySqlDAO {
 			   preparedStatement.setString(5, member.getEmail());
 			   preparedStatement.setDate(6, sqlDate);
 			   preparedStatement.setString(7, member.getAmount());
-			   preparedStatement.setString(8, member.getPaydate());
+			   preparedStatement.setDate(8, convertStringToSqlDate( member.getPaydate(), "yyyy/mm/dd" ));
 			   preparedStatement.setInt(9, member.getTeam());
 			   preparedStatement.setInt(10, member.getTeam2());
 			   preparedStatement.setInt(11, member.getTeam3());
@@ -292,7 +294,7 @@ public class MySqlDAO {
 		 String dob = member.getDob();
 		 if( dob.contains("/") )
 			 dob = replaceSlashWithDashInDate(member.getDob());
-		 sqlDate = convertStringToSqlDate(dob);
+		 sqlDate = convertStringToSqlDate(dob, "yyyy/mm/dd" );
 		 
 		  try {
 			   Connection connection = DBUtility.getConnection();
@@ -921,7 +923,7 @@ public class MySqlDAO {
 			  Connection connection = DBUtility.getConnection();
 			  PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO sessionPlan ( teamId, date, details ) VALUES (?, ?, ?)");
 			  preparedStatement.setInt(1, session.getTeamId());
-			  preparedStatement.setDate(2, convertStringToSqlDate(session.getDate()));
+			  preparedStatement.setDate(2, convertStringToSqlDate(session.getDate(), "yyyy/mm/dd" ));
 			  preparedStatement.setString(3, session.getDetails());
 			  preparedStatement.executeUpdate();
 		
@@ -1401,24 +1403,87 @@ public class MySqlDAO {
 		  return;
 	 }
 	 
-	 public java.sql.Date convertStringToSqlDate( String sDate )
+//	 public java.sql.Date convertStringToSqlDate( String sDate )
+//	 {
+//		 java.sql.Date sqlDate = null;
+//		 DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//		 
+//		 Date parsed = null;
+//		try {
+//			if( sDate != null && !sDate.isEmpty() )
+//				parsed = df.parse(sDate);
+//			else
+//				parsed = df.parse("1900-01-01");
+//		} catch (ParseException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		sqlDate = new java.sql.Date(parsed.getTime());
+//		 
+//		 return sqlDate;
+//	 }
+	 
+	 
+	 /*************************************************************
+	  * 
+	  * @param sDate string version of the date
+	  * @param format the format of the date separated by '/'
+	  * @return java.sql.date version of the string date
+	  */
+	 public java.sql.Date convertStringToSqlDate( String sDate, String format )
 	 {
-		 java.sql.Date sqlDate = null;
-		 DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+		 String [] parts = sDate.split("-");
+		 String [] formats = format.split("/");
+		 int day = 0, month = 0, year = 0;
 		 
-		 Date parsed = null;
-		try {
-			if( sDate != null && !sDate.isEmpty() )
-				parsed = df.parse(sDate);
-			else
-				parsed = df.parse("1900-01-01");
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		sqlDate = new java.sql.Date(parsed.getTime());
+		 for( int i=0; i<3; i++ )
+	      {
+	        if( formats[i].equals("dd") )
+	          day = i;
+	        else if( formats[i].equals("mm") )
+	          month = i;
+	        else if( formats[i].equals("yyyy") )
+	          year = i;
+	      }
 		 
-		 return sqlDate;
+		 Calendar cal = Calendar.getInstance();
+		 cal.set(Integer.parseInt(parts[year]), Integer.parseInt(parts[month])-1, Integer.parseInt(parts[day]));
+		 
+		 return new java.sql.Date( cal.getTimeInMillis() );
+	 }
+	 
+	 /*************************************************************
+	  * 
+	  * @param sDate string version of the date
+	  * @param format the format of the date separated by '/'
+	  * @return LocalDate version of the string date
+	  */
+	 public LocalDate convertStringToLocalDate( String sDate, String format )
+	 {
+		 LocalDate lDate = null;
+		 String [] parts = sDate.split("-");
+		 String [] formats = format.split("/");
+		 int day = 0, month = 0, year = 0;
+		 
+		 for( int i=0; i<sDate.length(); i++ )
+	      {
+	        if( formats[i].equals("dd") )
+	          day = i;
+	        else if( formats[i].equals("mm") )
+	          month = i;
+	        else if( formats[i].equals("yyyy") )
+	          year = i;
+	        i++;
+	      }
+		 
+		 lDate = LocalDate.of( Integer.parseInt(parts[year]), Integer.parseInt(parts[month]), Integer.parseInt(parts[day]));
+ 
+		 return lDate;
+	 }
+	 
+	 private static java.sql.Date convertJutilToSqlDate( Date jutilDate ) 
+	 {
+		 return new java.sql.Date(jutilDate.getTime());
 	 }
 	 
 	 public String replaceSlashWithDashInDate( String inDate )
@@ -1678,8 +1743,8 @@ public class MySqlDAO {
 	 {
 		 java.sql.Date arrivalDate = null;
 		 java.sql.Date departureDate = null;
-		 arrivalDate = convertStringToSqlDate(booking.getArrivalDate());
-		 departureDate = convertStringToSqlDate(booking.getDepartureDate());
+		 arrivalDate = convertStringToSqlDate(booking.getArrivalDate(), "yyyy/mm/dd" );
+		 departureDate = convertStringToSqlDate(booking.getDepartureDate(), "yyyy/mm/dd" );
 		 
 		  try {
 			  Connection connection = DBUtility.getConnection();
