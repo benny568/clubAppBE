@@ -23,11 +23,11 @@ public class Worker {
 	private String role;
 	//private MyTeams permissions;
 	
-	public Worker()
-	{
-		//roles = new ArrayList<SimpleGrantedAuthority>();
-		//permissions = new MyTeams();
-	}
+//	public Worker()
+//	{
+//		//roles = new ArrayList<SimpleGrantedAuthority>();
+//		//permissions = new MyTeams();
+//	}
 	
 	public long getUserId() {
 		return userId;

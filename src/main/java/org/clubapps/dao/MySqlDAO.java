@@ -47,6 +47,7 @@ import org.clubapps.model.EmailMessage;
 import org.clubapps.model.IpnInfo;
 import org.clubapps.model.Media;
 import org.clubapps.model.Member;
+import org.clubapps.model.Member2;
 import org.clubapps.model.MyTeams;
 import org.clubapps.model.NewsStory;
 import org.clubapps.model.SessionPlan;
@@ -1082,10 +1083,10 @@ public class MySqlDAO {
 		return thisUser;
 	}
 
-	public void updateUser(Worker user)
+	public void updateUser(Member2 user)
 	 {
-		 //java.sql.Date sqlDate = convertStringToSqlDate(user.getDob());
-		 java.sql.Date sqlDate = user.getDob();
+		java.sql.Date sqlDate = convertStringToSqlDate(user.getDob(), "dd/mm/yyyy");
+		 //java.sql.Date sqlDate = user.getDob();
 
 		  try {
 			  	// (1) Open the db connection
@@ -1102,7 +1103,7 @@ public class MySqlDAO {
 				preparedStatement.setString(4, user.getEmail());
 				preparedStatement.setDate(5, sqlDate);
 				preparedStatement.setString(6, user.getAvatar());
-				preparedStatement.setBoolean(7, user.getEnabled());
+				preparedStatement.setBoolean(7, user.isEnabled());
 				preparedStatement.setLong(8, user.getUserId());
 			   
 				int rowsAffected = preparedStatement.executeUpdate();

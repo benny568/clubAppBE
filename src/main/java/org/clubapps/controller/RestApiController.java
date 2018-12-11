@@ -23,6 +23,7 @@ import org.clubapps.model.Booking;
 import org.clubapps.model.ClubOfficer;
 import org.clubapps.model.EmailMessage;
 import org.clubapps.model.Member;
+import org.clubapps.model.Member2;
 import org.clubapps.model.NewsStory;
 import org.clubapps.model.SessionPlan;
 import org.clubapps.model.SessionRecord;
@@ -112,11 +113,19 @@ public class RestApiController {
 	
 	 }
 	 
-	 @RequestMapping(value="/team/{teamName}",method = RequestMethod.GET,headers="Accept=application/json")
+	 @RequestMapping(value="/public/team/{teamName}",method = RequestMethod.GET,headers="Accept=application/json")
 	 public Team getTeamDetails(@PathVariable String teamName) {
 		 log.debug("## ->getTeamDetails(" + teamName + ")..");
 		 Team team=dao.getTeamDetails(teamName);
 		 return team;
+	
+	 }
+	 
+	 @RequestMapping(value="/public/teammembers/{teamId}",method = RequestMethod.GET,headers="Accept=application/json")
+	 public List<Member> getMembersByTeamId(@PathVariable int teamId) {
+		 log.debug("## ->getMembersByTeamId(" + teamId + ")");
+		 List<Member> members=dao.getMembersByTeam(teamId);
+		 return members;
 	
 	 }
 	 
@@ -268,10 +277,10 @@ public class RestApiController {
 	 }
 	 
 	 @RequestMapping(value="/admin/user",method = RequestMethod.PUT)
-	 public void updateUser(@RequestBody Worker user) {	 
+	 public void updateUser(@RequestBody Member2 user) {	 
 		 dao.updateUser( user );
 	 }
-	 
+
 	 @RequestMapping(value="/admin/user",method = RequestMethod.POST)
 	 public void addUser(@RequestBody Worker user) {	 
 		 dao.addUser( user );
