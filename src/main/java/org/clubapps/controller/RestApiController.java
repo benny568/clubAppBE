@@ -84,13 +84,13 @@ public class RestApiController {
 	
 	 }
 	 
-	 @RequestMapping(value="/admin/user",method = RequestMethod.POST,headers="Accept=application/json")
-	 public void createUser( @RequestBody Worker user ) {
-		 log.debug("## ->createUser(" + user.getName() + ")..");
-		 dao.addUser(user);
-		 return;
-	
-	 }
+//	 @RequestMapping(value="/admin/user",method = RequestMethod.POST,headers="Accept=application/json")
+//	 public void createUser( @RequestBody Worker user ) {
+//		 log.debug("## ->createUser(" + user.getName() + ")..");
+//		 dao.addUser(user);
+//		 return;
+//	
+//	 }
 	 
 	 @RequestMapping(value="/public/teams",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Team> getAllTeams() {
