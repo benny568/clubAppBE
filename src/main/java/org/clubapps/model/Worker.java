@@ -10,60 +10,22 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 // a member who is just a club member, e.g. a player.
 
 public class Worker {
-	private long userId;
+	private int userId;
 	private String name;
 	private String password;
 	private String address;
-	private String email;
 	private String phone;
-	private Date dob;
+	private String email;
+	private String dob;
 	private String avatar;
-	private boolean enabled;
-	//private List<SimpleGrantedAuthority> roles;
 	private String role;
-	//private MyTeams permissions;
+	private boolean enabled;
 	
-//	public Worker()
-//	{
-//		//roles = new ArrayList<SimpleGrantedAuthority>();
-//		//permissions = new MyTeams();
-//	}
-	
-	public long getUserId() {
+	public int getUserId() {
 		return userId;
 	}
-	public void setUserId(long l) {
-		this.userId = l;
-	}
-	public String getAddress() {
-		return address;
-	}
-	public void setAddress(String address) {
-		this.address = address;
-	}
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	public String getPhone() {
-		return phone;
-	}
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-	public Date getDob() {
-		return dob;
-	}
-	public void setDob(Date date) {
-		this.dob = date;
-	}
-	public String getAvatar() {
-		return avatar;
-	}
-	public void setAvatar(String avatar) {
-		this.avatar = avatar;
+	public void setUserId(int userId) {
+		this.userId = userId;
 	}
 	public String getName() {
 		return name;
@@ -77,31 +39,46 @@ public class Worker {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public boolean getEnabled() {
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getDob() {
+		return dob;
+	}
+	public void setDob(String dob) {
+		this.dob = dob;
+	}
+	public String getAvatar() {
+		return avatar;
+	}
+	public void setAvatar(String avatar) {
+		this.avatar = avatar;
+	}
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}
+	public boolean isEnabled() {
 		return enabled;
 	}
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
-	}
-
-//	public List<SimpleGrantedAuthority> getRoles() {
-//		return roles;
-//	}
-//	public void setRoles(List<SimpleGrantedAuthority> authorities) {
-//		this.roles = authorities;
-//	}
-	
-//	public MyTeams getPermissions() {
-//		return permissions;
-//	}
-//	public void setPermissions(MyTeams permissions) {
-//		this.permissions = permissions;
-//	}
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
 	}
 }

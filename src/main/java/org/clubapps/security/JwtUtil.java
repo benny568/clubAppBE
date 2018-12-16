@@ -34,7 +34,7 @@ public class JwtUtil {
 
             Worker u = new Worker();
             u.setName(body.getSubject());
-            u.setUserId(Long.parseLong((String) body.get("userId")));
+            u.setUserId((int) Long.parseLong((String) body.get("userId")));
             u.setRole((String) body.get("role"));
             
 //            List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();

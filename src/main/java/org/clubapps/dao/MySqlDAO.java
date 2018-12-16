@@ -1036,7 +1036,7 @@ public class MySqlDAO {
 				   thisUser.setAddress(rs.getString("address"));
 				   thisUser.setEmail(rs.getString("email"));
 				   thisUser.setPhone(rs.getString("phone"));
-				   thisUser.setDob(rs.getDate("dob"));
+				   thisUser.setDob(convertSqlDateToString(rs.getDate("dob")));
 				   //thisUser.setDob(df.format(rs.getDate("dob")));
 				   thisUser.setAvatar(rs.getString("avatar"));
 				   thisUser.setEnabled(rs.getBoolean("enabled"));
@@ -1310,8 +1310,8 @@ public class MySqlDAO {
 					    user.setAddress(rs.getString("address")); 
 					    user.setPhone(rs.getString("phone"));
 					    user.setEmail(rs.getString("email"));
-					    user.setDob(rs.getDate("dob"));
-					    //user.setDob(convertSqlDateToString(rs.getDate("dob")));
+					    //user.setDob(rs.getDate("dob"));
+					    user.setDob(convertSqlDateToString(rs.getDate("dob")));
 					    user.setAvatar(rs.getString("avatar"));
 					    user.setEnabled(rs.getBoolean("enabled"));
 					    users.add(user);
@@ -1357,7 +1357,8 @@ public class MySqlDAO {
 	 public void addUser(Worker user)
 	 {
 		 //java.sql.Date sqlDate = convertStringToSqlDate(user.getDob());
-		 java.sql.Date sqlDate = user.getDob();
+		 //java.sql.Date sqlDate = user.getDob();
+		 java.sql.Date sqlDate = convertStringToSqlDate(user.getDob(), "dd/mm/yyyy");
 
 		  try {
 			  Connection connection = DBUtility.getConnection();
