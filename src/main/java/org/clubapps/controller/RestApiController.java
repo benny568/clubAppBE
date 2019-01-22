@@ -305,6 +305,15 @@ public class RestApiController {
 		 return users;	
 	 }
 	 
+	 @RequestMapping(value="/admin/me/{userName}",method = RequestMethod.GET,headers="Accept=application/json")
+	 public Worker getMyProfile(@PathVariable String userName) {
+		 log.debug("## ->getMyProfile(" + userName + ")");
+		 Worker me = dao.getUserByName(userName);
+		 log.debug("## <-getMyProfile(" + userName + ")");
+		 return me;
+	
+	 }
+	 
 	 @RequestMapping(value="/mail",method = RequestMethod.POST)
 	 public boolean messageUs(@RequestBody EmailMessage msg) 
 	 {	 

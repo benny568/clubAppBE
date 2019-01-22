@@ -1501,7 +1501,7 @@ public class MySqlDAO {
 	 public String convertSqlDateToString( java.sql.Date sqlDate )
 	 {
 		 String sDate = null;
-		 DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+		 DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
 
 		 
 		 if( sqlDate == null )
