@@ -56,7 +56,7 @@ public class RestApiController {
 	public RestApiController(){}
 	
 	@Autowired
-	MySqlDAO dao;//=new MySqlDAO();
+	MySqlDAO dao;
 	
 	/*
 	 * Used during authentication. If Spring Security has authenticated the user, then

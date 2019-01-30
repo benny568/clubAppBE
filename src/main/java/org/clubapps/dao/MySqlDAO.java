@@ -1058,7 +1058,8 @@ public class MySqlDAO {
 //			   while(rs.next()){
 //				   roles.add(rs.getString("ROLE"));
 //			   }
-//			   thisUser.setRoles(roles);
+			   roles.add("ROLE_ADMIN");
+			   thisUser.setRoles(roles);
 			   
 			   // (3) Get the user's permissions for the teams from the members table
 			   preparedStatement = connection.prepareStatement("select team, team2, team3, position, position2, position3 from member where email = ?");

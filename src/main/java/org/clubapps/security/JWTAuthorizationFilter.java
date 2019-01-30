@@ -57,8 +57,13 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             // parse the token.
         	Worker user = jwtUtil.parseToken(token);
         	ArrayList<SimpleGrantedAuthority> asga = new ArrayList<SimpleGrantedAuthority>();
-        	SimpleGrantedAuthority sga = new SimpleGrantedAuthority(user.getRole());
-        	asga.add(sga);
+        	//SimpleGrantedAuthority sga = new SimpleGrantedAuthority(user.getRole());
+        	
+        	for( int i=0; i<user.getRoles().size(); i++ )
+        	{
+        		SimpleGrantedAuthority sga = new SimpleGrantedAuthority(user.getRole());
+        		asga.add(sga);
+        	}
 
             if (user != null) {
                 return new UsernamePasswordAuthenticationToken(user.getName(), null, asga);

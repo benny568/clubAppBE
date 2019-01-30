@@ -8,7 +8,9 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.clubapps.dao.MySqlDAO;
 import org.clubapps.model.Worker;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import io.jsonwebtoken.Claims;
@@ -36,11 +38,8 @@ public class JwtUtil {
             u.setName(body.getSubject());
             u.setUserId((int) Long.parseLong((String) body.get("userId")));
             u.setRole((String) body.get("role"));
-            
-//            List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
-//            authorities.add(new SimpleGrantedAuthority(u.getRole()));
-            //u.setRoles(authorities);
             u.setRole(u.getRole());
+            u.setRoles(extractRolesFromString( (String) body.get("roles") ));
 
             return u;
 
@@ -60,11 +59,39 @@ public class JwtUtil {
         Claims claims = Jwts.claims().setSubject(u.getName());
         claims.put("userId", u.getUserId() + "");
         claims.put("role", u.getRole());
+        claims.put("roles", createRoleString(u.getRoles()) );
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS512, SECRET)
                 .compact();
+    }
+    
+    private String createRoleString( ArrayList<String> alRoles )
+    {
+    	String roles = new String();
+    	
+    	for( int i=0; i<alRoles.size(); i++ )
+    	{
+    		if( i != 0 )
+    			roles += ",";
+    		roles += alRoles.get(i);
+    	}   	
+    	
+    	return roles;
+    }
+    
+    private ArrayList<String> extractRolesFromString( String roles )
+    {
+    	ArrayList<String> aRoles = new ArrayList<String>();
+    	
+    	String [] elements = roles.split(",");
+    	for (String s: elements) 
+    	{
+    		aRoles.add(s);
+    	}
+    	
+    	return aRoles;
     }
 }

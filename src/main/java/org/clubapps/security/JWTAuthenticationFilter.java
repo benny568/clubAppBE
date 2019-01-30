@@ -58,12 +58,24 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     	List<SimpleGrantedAuthority> authorities = (List<SimpleGrantedAuthority>) auth.getAuthorities();
     	user.setName(auth.getName());
     	user.setRole(authorities.get(0).getAuthority());
-    	//user.setRoles(authorities);
+    	user.setRoles( extractRoles(authorities) );
     	
     	String token = jwtUtil.generateToken(user);
         res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
         res.getWriter().write(token.toString());
 
+    }
+    
+    private ArrayList<String> extractRoles( List<SimpleGrantedAuthority> authorities )
+    {
+    	ArrayList<String> roles = new ArrayList<String>();
+    	
+    	for( int i=0; i<authorities.size(); i++ )
+    	{
+    		roles.add(authorities.get(i).getAuthority());
+    	}
+    	
+    	return roles;
     }
     
 }

@@ -19,6 +19,7 @@ public class Worker {
 	private String dob;
 	private String avatar;
 	private String role;
+	private ArrayList<String> roles;
 	private boolean enabled;
 	
 	public int getUserId() {
@@ -80,5 +81,11 @@ public class Worker {
 	}
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+	public ArrayList<String> getRoles() {
+		return roles;
+	}
+	public void setRoles(ArrayList<String> roles) {
+		this.roles = roles;
 	}
 }
