@@ -14,6 +14,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -25,6 +26,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled=true)
 public class WebSecurity extends WebSecurityConfigurerAdapter {
     private UserDetailsService userDetailsService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -45,7 +47,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,PAYPAL_IPN).permitAll()
                 .antMatchers(HttpMethod.POST,CONFIRM_ACADEMY_REG_POST).permitAll()
                 .antMatchers(HttpMethod.POST,ACADEMY_REG_POST).permitAll()
-                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/admin/**").hasAnyAuthority("admin:read")//hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager()))

@@ -29,7 +29,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest req,
                                     HttpServletResponse res,
                                     FilterChain chain) throws IOException, ServletException {
-    		// (1) Pick out the 'Authorization' header
+    	// (1) Pick out the 'Authorization' header
         String header = req.getHeader(HEADER_STRING);
 
         // (2) If there is no 'Authorization' header or it doesn't have the 'Bearer' value
@@ -61,7 +61,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         	
         	for( int i=0; i<user.getRoles().size(); i++ )
         	{
-        		SimpleGrantedAuthority sga = new SimpleGrantedAuthority(user.getRole());
+        		SimpleGrantedAuthority sga = new SimpleGrantedAuthority(user.getRoles().get(i));
         		asga.add(sga);
         	}
 

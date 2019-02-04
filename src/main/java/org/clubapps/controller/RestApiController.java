@@ -2,7 +2,10 @@ package org.clubapps.controller;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,7 +36,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,6 +75,7 @@ public class RestApiController {
 	    return user;
 	  }
 
+	@PreAuthorize("hasAuthority('team:read')")
 	 @RequestMapping(value="/admin/team/{teamId}",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Member> getMembersByTeam(@PathVariable int teamId) {
 		 log.debug("## ->getMembersByTeam(" + teamId + ")");
@@ -76,6 +85,7 @@ public class RestApiController {
 	
 	 }
 	 
+	@PreAuthorize("hasAuthority('team:read')")
 	 @RequestMapping(value="/admin/teams",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Team> getTeams() {
 		 log.debug("## |-> getTeams()..");
@@ -83,14 +93,6 @@ public class RestApiController {
 		 return teams;
 	
 	 }
-	 
-//	 @RequestMapping(value="/admin/user",method = RequestMethod.POST,headers="Accept=application/json")
-//	 public void createUser( @RequestBody Worker user ) {
-//		 log.debug("## ->createUser(" + user.getName() + ")..");
-//		 dao.addUser(user);
-//		 return;
-//	
-//	 }
 	 
 	 @RequestMapping(value="/public/teams",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Team> getAllTeams() {
@@ -159,6 +161,7 @@ public class RestApiController {
 		 dao.updateNewsStory( newsStory );	
 	 }
 	 
+	 @PreAuthorize("hasAuthority('member:read')")
 	 @RequestMapping(value="/admin/members",method = RequestMethod.GET,headers="Accept=application/json")
 	 public List<Member> getAllMembers() {
 		 log.debug("## ->getAllMembers()..");
@@ -167,19 +170,26 @@ public class RestApiController {
 	
 	 }
 	 
+	 @PreAuthorize("hasAuthority('member:create')")
 	 @RequestMapping(value="/admin/member",method = RequestMethod.POST)
 	 public void addMember(@RequestBody Member member) {	 
 		 dao.addMember( member );	
 	 }
 	 
+	 @PreAuthorize("hasAuthority('member:update')")
 	 @RequestMapping(value="/admin/member",method = RequestMethod.PUT)
 	 public void updateMemberDetails(@RequestBody Member member) {	 
 		 dao.updateMemberDetails( member );
 	 }
 	 
+	 @PreAuthorize("hasAuthority('member:delete')")
 	 @RequestMapping(value="/admin/member/{memberId}",method = RequestMethod.DELETE)
-	 public int deleteMemberDetails(@PathVariable int memberId) {	 
-		 return dao.deleteMemberDetails( memberId );
+	 public int deleteMemberDetails(@PathVariable int memberId, Principal user) {
+		 System.out.println("THE USER TRYING TO DELETE A MEMEBER IS: " + user.getName() );
+		 if( isActionAllowed("ROLE_ADMIN"))
+		  return dao.deleteMemberDetails( memberId );
+		 else
+			 return 403;
 	 }
 
 	 
@@ -211,16 +221,19 @@ public class RestApiController {
 		 dao.uploadNews(req, res);
 	 }
 	 
+	 @PreAuthorize("hasAuthority('team:create')")
 	 @RequestMapping(value="/admin/team",method = RequestMethod.POST)
 	 public void addTeam(@RequestBody Team team ) {	 
 		 dao.addTeam( team );
 	 }
 	 
+	 @PreAuthorize("hasAuthority('team:update')")
 	 @RequestMapping(value="/admin/team",method = RequestMethod.PUT)
 	 public void updateTeam(@RequestBody Team team) {	 
 		 dao.updateTeam( team );
 	 }
 	 
+	 @PreAuthorize("hasAuthority('team:delete')")
 	 @RequestMapping(value="/admin/team",method = RequestMethod.DELETE)
 	 public void deleteTeam(@RequestBody int teamId) {	 
 		 dao.deleteTeam( teamId );
@@ -267,7 +280,7 @@ public class RestApiController {
 		 dao.insertSessionRecordForMember(sr);	
 	 }
 	 
-	 
+	 @PreAuthorize("hasAuthority('user:read')")
 	 @RequestMapping(value="/admin/user",method = RequestMethod.GET,headers="Accept=application/json")
 	 public Worker getUserName(Principal principal) {
 		 User activeUser = (User) ((Authentication) principal).getPrincipal();
@@ -276,26 +289,31 @@ public class RestApiController {
 		 return thisUser;	
 	 }
 	 
+	 @PreAuthorize("hasAuthority('user:update')")
 	 @RequestMapping(value="/admin/user",method = RequestMethod.PUT)
 	 public void updateUser(@RequestBody Member2 user) {	 
 		 dao.updateUser( user );
 	 }
 
+	 @PreAuthorize("hasAuthority('user:create')")
 	 @RequestMapping(value="/admin/user",method = RequestMethod.POST)
 	 public void addUser(@RequestBody Worker user) {	 
 		 dao.addUser( user );
 	 }
 	 
+	 //@PreAuthorize("hasAuthority('user:update')")
 	 @RequestMapping(value="/admin/password",method = RequestMethod.PUT)
 	 public void updateUserPassword(@RequestBody Worker user) {	 
 		 dao.updateUserPassword( user );
 	 }
 	 
+	 @PreAuthorize("hasAuthority('user:delete')")
 	 @RequestMapping(value="/admin/user/{id}",method = RequestMethod.DELETE)
 	 public void deleteUser(@PathVariable int id) {	 
 		 dao.deleteUser( id );
 	 }
 	 
+	 @PreAuthorize("hasAuthority('user:read')")
 	 @RequestMapping(value="/admin/users",method = RequestMethod.GET,headers="Accept=application/json")
 	 public  List<Worker> getAllUsers() 
 	 {
@@ -305,6 +323,7 @@ public class RestApiController {
 		 return users;	
 	 }
 	 
+	 @PreAuthorize("isAuthenticated()")
 	 @RequestMapping(value="/admin/me/{userName}",method = RequestMethod.GET,headers="Accept=application/json")
 	 public Worker getMyProfile(@PathVariable String userName) {
 		 log.debug("## ->getMyProfile(" + userName + ")");
@@ -361,76 +380,6 @@ public class RestApiController {
 	         return false;
 	      }
 	 }
-	 
-	 @RequestMapping(value="/confirmbooking",method = RequestMethod.POST)
-	 public boolean confirmEmail(@RequestBody Booking booking) 
-	 {	 
-		 EmailMessage msg = new EmailMessage();
-		 String destination = booking.getEmail();
-		 msg.setSubject("Avenue United: Booking Confirmation - Automated message, do not reply");
-		 msg.setMessage("Confirmation of your booking: \n" +
-				 		"Name: " + booking.getFirstname() + " " + booking.getSurname() + "\n" +
-				 		"Phone: " + booking.getPhone() + "\n" +
-				 		"Arrival: " + booking.getArrivalDate() + "\n" +
-				 		"Departure: " + booking.getDepartureDate() + "\n" +
-				 		"Number of nights: " + booking.getNumberOfNights() + "\n" +
-				 		"Number of people: " + booking.getNumberOfPeople() + "\n" +
-				 		"Deposit: " + booking.getDeposit() +  "\n" +
-				 		"Total Due: " + booking.getTotalCharge()
-				 		);
-		 msg.setSenderAddress("booking@avenueunited.ie");
-
-	      final String username = "booking@avenueunited.ie";
-	      final String password = "UpThe@venue83";
-
-	      Properties props = new Properties();
-	      props.put("mail.smtp.auth", "true");
-	      props.put("mail.smtp.starttls.enable", "true");
-	      props.put("mail.smtp.host", "mail.avenueunited.ie");
-	      props.put("mail.smtp.port", "25");
-
-	      // Get the default Session object.
-	      Session session = Session.getInstance(props,
-	    		  new javax.mail.Authenticator() {
-	    			protected PasswordAuthentication getPasswordAuthentication() {
-	    				return new PasswordAuthentication(username, password);
-	    			}
-	    		  });
-	      
-		 try{
-	         // Create a default MimeMessage object.
-	         MimeMessage message = new MimeMessage(session);
-
-	         // Set From: header field of the header.
-	         message.setFrom(new InternetAddress(msg.getSenderAddress()));
-
-	         // Set To: header field of the header.
-	         message.addRecipient(Message.RecipientType.TO, new InternetAddress(destination));
-
-	         // Set Subject: header field
-	         message.setSubject(msg.getSubject());
-
-	         // Now set the actual message
-	         message.setText(msg.getMessage());
-
-	         // Send message
-	         Transport.send(message);
-	         System.out.println("Sent message successfully....");
-	         return true;
-	      }catch (MessagingException mex) {
-	         mex.printStackTrace();
-	         return false;
-	      }
-	 }
-	 
-	 @RequestMapping(value="/confirmregistration",method = RequestMethod.POST)
-	 public void confirmRegistrationEmail(@RequestBody Member member) 
-	 {	 
-		 log.debug("## ->confirmRegistrationEmail("+member.getName()+")");
-		 dao.sendRegistrationDetailsEmail(member);
-		 log.debug("## <-confirmRegistrationEmail()");
-		 return;
-	 }
 
 	 
 	 @RequestMapping(value="/admin/manager/{name}",method = RequestMethod.GET,headers="Accept=application/json")
@@ -476,13 +425,6 @@ public class RestApiController {
 		 List<String> videos = dao.getVideoMedia(cat1, cat2, cat3);
 		 log.debug("## <-getVideoMedia(): " + videos);
 		 return videos;	
-	 }
-	 
-	 @RequestMapping(value="/booking",method = RequestMethod.POST)
-	 public void addBookingDetails(@RequestBody Booking booking) {	
-		 log.debug("## ->addBookingDetails("+booking+")");
-		 dao.addBookingDetails( booking );
-		 log.debug("## <-addBookingDetails()");
 	 }
 	 
 	 @RequestMapping(value="/academyregistration",method = RequestMethod.POST)
@@ -564,5 +506,22 @@ public class RestApiController {
 		 log.debug("**    Status: " + member.getStatus());	 
 		 log.debug("*************************************************");
 		 log.debug("<= logMemberDetails()");
+	 }
+	 
+	 private boolean isActionAllowed( String requestedRole )
+	 {
+		 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		 Collection<? extends GrantedAuthority> roles = auth.getAuthorities();
+		 
+		 Iterator<?> itr = roles.iterator();
+		 
+		 while( itr.hasNext() )
+		 {
+			 SimpleGrantedAuthority role = (SimpleGrantedAuthority) itr.next();
+			 if( role.getAuthority().contentEquals(requestedRole) )
+				 return true;
+		 }
+		 
+		 return false;
 	 }
 }

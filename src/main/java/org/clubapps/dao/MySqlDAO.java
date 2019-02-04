@@ -59,7 +59,11 @@ import org.clubapps.utility.DBUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -89,8 +93,9 @@ public class MySqlDAO {
 		
 		log.trace("## <- Return from createUser()");
 	}
-	public User findByUsername( String username )
+	public User findByUsername2( String username )
 	{
+		
 		log.trace("## -> findByUsername(" + username + ")");
 		
 		String name = null;
@@ -141,8 +146,85 @@ public class MySqlDAO {
 	  log.trace("Roles: " + auths.get(0).getAuthority());
 	  log.trace("-------------------");
 	  log.trace("## <- findByUsername()");
+	  
+	  // test("ROLE_ADMIN");
+	  
 	  return new User(name, pass, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked,auths);
 	}
+	
+	private boolean test(String role)
+	{
+		SecurityContext context = SecurityContextHolder.getContext();
+        if (context == null)
+            return false;
+
+        Authentication authentication = context.getAuthentication();
+        if (authentication == null)
+            return false;
+
+        for (GrantedAuthority auth : authentication.getAuthorities()) {
+            if (role.equals(auth.getAuthority()))
+                return true;
+        }
+        return false;
+	}
+	
+	public User findByUsername( String username )
+	{
+		log.trace("## -> findByUsername(" + username + ")");
+		
+		String name = null;
+		String pass = null;
+		int userId = 0;
+		boolean enabled = true;
+		boolean accountNonExpired = true; 
+		boolean credentialsNonExpired = true;
+		boolean accountNonLocked = true;
+		List<SimpleGrantedAuthority> auths = new ArrayList<SimpleGrantedAuthority>();
+		
+		try {
+			   Connection connection = DBUtility.getConnection();
+		  	   PreparedStatement preparedStatement = connection.prepareStatement("select userid, name, password from user where name = ?");
+			   preparedStatement.setString(1, username);
+			   ResultSet rs = preparedStatement.executeQuery();
+			   log.trace("##    Executed query[select userid, name, password from user]");
+			   while (rs.next()) 
+			   {
+				    name = rs.getString("name");
+				    pass = rs.getString("password"); 
+				    userId = rs.getInt("userid");
+			   }
+			   
+			   // (2) Get the user's permissions from the permission table
+			   preparedStatement = connection.prepareStatement("select * from permission where userid = ?");
+			   preparedStatement.setInt(1, userId);
+			   rs = preparedStatement.executeQuery();
+			   
+			   // Now get the user's permissions
+			   while(rs.next())
+			   {
+				   SimpleGrantedAuthority sga = new SimpleGrantedAuthority(rs.getString("permission"));
+				   auths.add(sga);
+			   }
+			   
+	  } catch (SQLException e) {
+	   e.printStackTrace();
+	  }
+
+	  DBUtility.closeConnection();
+	  log.trace("-------------------");
+	  log.trace("Username: " + name);
+	  log.trace("Password: " + pass);
+	  log.trace("Enabled:  " + enabled);
+	  log.trace("NotExp:  " + accountNonExpired);
+	  log.trace("CredNotExp:  " + credentialsNonExpired);
+	  log.trace("NotLocked: " + accountNonLocked);
+	  //log.trace("Permissions: " + auths.get(0).getAuthority());
+	  log.trace("-------------------");
+	  log.trace("## <- findByUsername()");
+	  return new User(name, pass, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked,auths);
+	}
+
 	
 	 public List<Member> getAllMembers() {
 
@@ -151,7 +233,7 @@ public class MySqlDAO {
 		  try {
 			  	   Connection connection = DBUtility.getConnection();
 				   Statement statement = connection.createStatement();
-				   ResultSet rs = statement.executeQuery("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, paydate, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements from member");
+				   ResultSet rs = statement.executeQuery("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, paydate, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements, status, academyinfo from member");
 				   log.trace("##    Executed query[select * from member]");
 				   while (rs.next()) 
 				   {
@@ -180,6 +262,8 @@ public class MySqlDAO {
 					    member.setSgoals(rs.getInt("sgoals"));
 					    member.setPhoto(rs.getString("photo"));
 					    member.setAchievements(rs.getString("achievements"));
+					    member.setStatus(rs.getString("status"));
+					    member.setAcademyinfo(rs.getString("academyinfo"));
 					    members.add(member);
 					    log.trace("##    Adding member to list: " + member);
 				   }
@@ -199,7 +283,7 @@ public class MySqlDAO {
 		 try {
 			   Connection connection = DBUtility.getConnection();
 			   // SELECT DATE_FORMAT(CURDATE(), '%m/%d/%Y') today;
-			   PreparedStatement preparedStatement = connection.prepareStatement("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, paydate, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements from member where team=? or team2=? or team3=?");
+			   PreparedStatement preparedStatement = connection.prepareStatement("select id, name, address, phone, phone2, email, DATE_FORMAT(dob, '%d-%m-%Y') dob, amount, paydate, team, team2, team3, position, position2, position3, lid, status, favplayer, favteam, sappears, sassists, sgoals, photo, achievements, status, academyinfo from member where team=? or team2=? or team3=?");
 			   //PreparedStatement preparedStatement = connection.prepareStatement("select * from member where team=? or team2=? or team3=?");
 			   preparedStatement.setInt(1, teamId);
 			   preparedStatement.setInt(2, teamId);
@@ -233,6 +317,8 @@ public class MySqlDAO {
 				    member.setSgoals(rs.getInt("sgoals"));
 				    member.setPhoto(rs.getString("photo"));
 				    member.setAchievements(rs.getString("achievements"));
+				    member.setStatus(rs.getString("status"));
+				    member.setAcademyinfo(rs.getString("academyinfo"));
 				    log.trace("##    Adding member to list: " + member);
 				    log.debug("##    Adding member to list: " + member);
 				    members.add(member);
@@ -302,7 +388,7 @@ public class MySqlDAO {
 			   PreparedStatement preparedStatement = connection.prepareStatement("update member set name=?, address=?, phone=?, phone2=?, dob=?, email=?,"
 			   																	+ "amount=?, paydate=?, receiptid=?, team=?, team2=?, team3=?, position=?, position2=?, "
 			   																	+ "position3=?, lid=?, favteam=?, favplayer=?, sappears=?, sassists=?, sgoals=?, "
-			   																	+ "photo=?, achievements=?, status=? where id=?");
+			   																	+ "photo=?, achievements=?, status=?, academyinfo where id=?");
 			   preparedStatement.setString(1, member.getName());
 			   preparedStatement.setString(2, member.getAddress());
 			   preparedStatement.setString(3, member.getPhone());
@@ -327,7 +413,8 @@ public class MySqlDAO {
 			   preparedStatement.setString(22, member.getPhoto());
 			   preparedStatement.setString(23, member.getAchievements());
 			   preparedStatement.setString(24, member.getStatus());
-			   preparedStatement.setInt(25, member.getId());			   			   
+			   preparedStatement.setInt(25, member.getId());
+			   preparedStatement.setString(26, member.getAcademyinfo());
 			   preparedStatement.executeUpdate();
 		
 			  } catch (SQLException e) {
@@ -1162,6 +1249,11 @@ public class MySqlDAO {
 			    
 			    // (3) Need to delete the user roles first from the user_roles table
 			  	preparedStatement = connection.prepareStatement("DELETE from user_roles where userid = ?");
+			  	preparedStatement.setLong(1, id);
+			  	preparedStatement.executeUpdate();
+			  	
+			  	// (4) Need to delete the user permissions first from the permissions table
+			  	preparedStatement = connection.prepareStatement("DELETE from permission where userid = ?");
 			  	preparedStatement.setLong(1, id);
 			  	preparedStatement.executeUpdate();
 			  	

@@ -13,13 +13,13 @@ import java.util.Date;
 @Component
 public class TokenHelper {
 
-    @Value("myapp")
+    @Value("clubApp")
     private String APP_NAME;
 
     @Value("vianee2")
     private String SECRET;
 
-    @Value("86400")
+    @Value("3600") // 1 hour
     private int EXPIRES_IN;
 
     private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;

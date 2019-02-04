@@ -37,8 +37,8 @@ public class JwtUtil {
             Worker u = new Worker();
             u.setName(body.getSubject());
             u.setUserId((int) Long.parseLong((String) body.get("userId")));
-            u.setRole((String) body.get("role"));
-            u.setRole(u.getRole());
+            //u.setRole((String) body.get("role"));
+            //u.setRole(u.getRole());
             u.setRoles(extractRolesFromString( (String) body.get("roles") ));
 
             return u;
@@ -58,7 +58,7 @@ public class JwtUtil {
     public String generateToken(Worker u) {
         Claims claims = Jwts.claims().setSubject(u.getName());
         claims.put("userId", u.getUserId() + "");
-        claims.put("role", u.getRole());
+        //claims.put("role", u.getRole());
         claims.put("roles", createRoleString(u.getRoles()) );
 
         return Jwts.builder()
